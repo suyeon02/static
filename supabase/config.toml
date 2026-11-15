@@ -1,0 +1,4 @@
+project_id = "my-desk"
+
+[functions.send-push-reminders]
+verify_jwt = false
