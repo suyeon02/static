@@ -6,7 +6,7 @@ import { AuthProvider } from './contexts/AuthContext'
 
 if (window.isSecureContext && 'serviceWorker' in navigator) {
   navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch((error) => {
-    console.error('Could not register the MY DESK service worker.', error)
+    console.error('Could not register the STATIC service worker.', error)
   })
 }
 

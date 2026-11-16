@@ -47,7 +47,7 @@ export default function AuthPage() {
         setMessage(
           needsEmailConfirmation
             ? '가입 확인 메일을 보냈습니다. 이메일 인증 후 로그인해 주세요.'
-            : '계정이 생성되었습니다. MY DESK를 시작해 보세요.',
+            : '계정이 생성되었습니다. STATIC을 시작해 보세요.',
         )
         if (needsEmailConfirmation) setMode('login')
       }
@@ -64,13 +64,13 @@ export default function AuthPage() {
       <section className="auth-card" aria-labelledby="auth-title">
         <div className="auth-brand">
           <span className="auth-brand-mark" aria-hidden="true">✳</span>
-          <span>MY DESK</span>
+          <span>STATIC</span>
         </div>
 
         <div className="auth-heading">
           <p className="auth-eyebrow">YOUR PERSONAL WORKSPACE</p>
           <h1 id="auth-title">
-            {mode === 'login' ? '다시 만나서 반가워요.' : 'MY DESK 시작하기'}
+            {mode === 'login' ? '다시 만나서 반가워요.' : 'STATIC 시작하기'}
           </h1>
           <p>
             {mode === 'login'
@@ -167,7 +167,7 @@ export default function AuthPage() {
             <span>NOTES</span><span>PLANNER</span><span>AI LIBRARY</span>
           </div>
         </div>
-        <div className="auth-side-bottom">MY DESK · YOUR SPACE</div>
+        <div className="auth-side-bottom">STATIC · YOUR SPACE</div>
       </aside>
     </main>
   )

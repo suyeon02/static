@@ -16,12 +16,12 @@ self.addEventListener('push', (event) => {
 
   const reminders = {
     task_due: {
-      title: 'MY DESK reminder',
-      body: 'A task is due today.',
+      title: 'STATIC 알림',
+      body: '오늘 마감인 할 일이 있어요.',
     },
     event_upcoming: {
-      title: 'MY DESK reminder',
-      body: 'A calendar event starts soon.',
+      title: 'STATIC 알림',
+      body: '일정 시작 10분 전이에요.',
     },
   };
   const reminder = reminders[type];

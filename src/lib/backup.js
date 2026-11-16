@@ -137,7 +137,7 @@ export async function createBackupZip({
   await assertSignedInUser(userId);
   const zipFiles = {};
   const manifest = {
-    app: 'MY DESK',
+    app: 'STATIC',
     version: BACKUP_VERSION,
     createdAt: new Date().toISOString(),
     dataFiles: DATA_FILES,
@@ -256,12 +256,12 @@ function validateArchive(archive, strFromU8) {
   const manifest = parseJsonFile(archive, 'manifest.json', strFromU8);
   if (
     !manifest ||
-    manifest.app !== 'MY DESK' ||
+    !['STATIC', 'MY DESK'].includes(manifest.app) ||
     manifest.version !== BACKUP_VERSION ||
     !manifest.dataFiles ||
     !Array.isArray(manifest.files)
   ) {
-    throw new Error('지원되는 MY DESK 백업 파일(버전 1)이 아닙니다.');
+    throw new Error('지원되는 STATIC 백업 파일(버전 1)이 아닙니다.');
   }
 
   for (const [category, expectedPath] of Object.entries(DATA_FILES)) {

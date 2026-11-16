@@ -122,7 +122,7 @@ device when it enables push.
    Rebuild and deploy the app over HTTPS. This key is public; never put the
    private key or service role key in a `VITE_` variable.
 
-5. In MY DESK, choose the bell icon and explicitly enable push. The browser
+5. In STATIC, choose the bell icon and explicitly enable push. The browser
    permission prompt appears only after that click. On iPhone/iPad, users must
    install the site to the Home Screen and launch the installed app on
    iOS/iPadOS 16.4 or later. Unsupported browsers and ordinary iOS browser tabs

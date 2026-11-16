@@ -36,9 +36,9 @@ export default function PushNotificationsPanel({
 
       <p className="mt-3 text-[10px] leading-relaxed text-[#666666]">
         데스크톱 및 Android 브라우저에서 Web Push를 사용할 수 있습니다.
-        iPhone 또는 iPad에서는 MY DESK를 홈 화면에 추가한 뒤 앱으로 열어야
+        iPhone 또는 iPad에서는 STATIC을 홈 화면에 추가한 뒤 앱으로 열어야
         합니다(iOS/iPadOS 16.4 이상). 일반 브라우저 탭에서는 푸시 알림을 받을
-        수 없습니다. HTTPS 연결이 필요하며, 푸시 알림 전송을 위해 MY DESK
+        수 없습니다. HTTPS 연결이 필요하며, 푸시 알림 전송을 위해 STATIC
         Supabase 스케줄러 설정도 필요합니다.
       </p>
 

@@ -162,7 +162,7 @@ export default function usePushNotifications(userId) {
       );
       if (error?.code === '23505') {
         throw new Error(
-          '이 기기는 다른 MY DESK 계정에 연결되어 있습니다. 해당 계정으로 로그인한 뒤 푸시 알림을 먼저 꺼 주세요.',
+          '이 기기는 다른 STATIC 계정에 연결되어 있습니다. 해당 계정으로 로그인한 뒤 푸시 알림을 먼저 꺼 주세요.',
         );
       }
       if (error) throw error;

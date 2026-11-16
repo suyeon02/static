@@ -1,6 +1,6 @@
 {
-  "name": "MY DESK",
-  "short_name": "MY DESK",
+  "name": "STATIC",
+  "short_name": "STATIC",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

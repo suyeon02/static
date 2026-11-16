@@ -1,6 +1,6 @@
-# MY DESK
+# STATIC
 
-MY DESK is a React app built with Vite and Supabase. The GitHub Pages site is
+STATIC is a React app built with Vite and Supabase. The GitHub Pages site is
 public at <https://suyeon02.github.io/static/>; user data is protected by
 Supabase Auth and row-level security (RLS), not by hiding the website.
 

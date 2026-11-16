@@ -55,7 +55,7 @@ export default function BackupPage({
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `my-desk-backup-${new Date().toISOString().slice(0, 10)}.zip`;
+      link.download = `static-backup-${new Date().toISOString().slice(0, 10)}.zip`;
       link.style.display = 'none';
       document.body.appendChild(link);
       link.click();
@@ -72,7 +72,7 @@ export default function BackupPage({
   const handleRestore = async () => {
     if (!backupFile) return;
     const confirmed = window.confirm(
-      '선택한 MY DESK 백업을 현재 로그인한 계정에 병합하시겠습니까? 기존 데이터와 파일은 유지되며, ID나 경로가 중복되는 항목은 덮어쓰지 않습니다.',
+      '선택한 STATIC 백업을 현재 로그인한 계정에 병합하시겠습니까? 기존 데이터와 파일은 유지되며, ID나 경로가 중복되는 항목은 덮어쓰지 않습니다.',
     );
     if (!confirmed) return;
 
@@ -148,7 +148,7 @@ export default function BackupPage({
           associated with the currently signed-in account.
         </p>
         <label className="block space-y-1.5 text-[11px] font-bold">
-          MY DESK backup ZIP
+          STATIC backup ZIP
           <input
             ref={fileInputRef}
             type="file"
