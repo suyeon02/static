@@ -333,6 +333,7 @@
   cursor: pointer;
   transform: translate(-50%, -145px);
   animation: auth-wander 16s ease-in-out infinite;
+  transition: translate 0.3s ease-out;
   will-change: transform;
 }
 
@@ -395,6 +396,7 @@
   align-items: center;
   justify-content: center;
   gap: 5px;
+  transition: transform 0.12s ease-out;
 }
 
 .auth-mascot-blush {
@@ -467,9 +469,7 @@
   transition: opacity 0.15s, transform 0.15s;
 }
 
-.auth-mascot:hover .auth-mascot-speech,
-.auth-mascot:focus-visible .auth-mascot-speech,
-.auth-mascot.is-happy .auth-mascot-speech {
+.auth-mascot.is-speaking .auth-mascot-speech {
   opacity: 1;
   transform: translate(-50%, 0);
 }
@@ -652,6 +652,11 @@
   .auth-mascot-eye,
   .auth-cursor {
     animation: none;
+  }
+
+  .auth-mascot,
+  .auth-mascot-face {
+    transition: none;
   }
 
   .auth-submit span,
