@@ -403,57 +403,50 @@ async function importTable(table, rows, userId, onProgress) {
   return result;
 }
 
-function mergeLocalMemos(data, memoText, quickMemos, setMemoText, setQuickMemos, onProgress) {
+async function mergeLocalMemos(data, mergeBackupMemos, onProgress) {
   const result = {};
-  const nextMemoText = memoText || data.static_memo;
+  let merged = {
+    draftImported: false,
+    draftError: null,
+    memosImported: 0,
+    memosError: null,
+  };
   try {
-    localStorage.setItem('static_memo', nextMemoText);
-    setMemoText(nextMemoText);
-    result.static_memo = {
-      imported: memoText ? 0 : Number(Boolean(data.static_memo)),
-      skipped: memoText ? Number(Boolean(data.static_memo)) : 0,
-      errors: [],
-    };
+    merged = await mergeBackupMemos(
+      data.static_memo,
+      data.static_quick_memos,
+    );
   } catch (error) {
-    result.static_memo = {
-      imported: 0,
-      skipped: 0,
-      errors: [getLocalizedErrorMessage(error, '다시 시도해 주세요.')],
-    };
+    const message = getLocalizedErrorMessage(error, '다시 시도해 주세요.');
+    merged.draftError = message;
+    merged.memosError = message;
   }
+  result.static_memo = {
+    imported: Number(merged.draftImported),
+    skipped: Number(Boolean(data.static_memo) && !merged.draftImported),
+    errors: merged.draftError
+      ? [getLocalizedErrorMessage(merged.draftError, '다시 시도해 주세요.')]
+      : [],
+  };
+  result.static_quick_memos = {
+    imported: merged.memosImported,
+    skipped: data.static_quick_memos.length - merged.memosImported,
+    errors: merged.memosError
+      ? [getLocalizedErrorMessage(merged.memosError, '다시 시도해 주세요.')]
+      : [],
+  };
   report(onProgress, 'static_memo', {
     status: result.static_memo.errors.length ? 'error' : 'done',
     ...result.static_memo,
-    message: result.static_memo.errors[0] || '기존 메모가 있으면 유지합니다.',
+    message:
+      result.static_memo.errors[0] || '기존 메모가 있으면 유지합니다.',
   });
-
-  const existing = new Set(quickMemos.map((memo) => String(memo.id)));
-  const additions = data.static_quick_memos.filter((memo) => {
-    const key = String(memo.id);
-    if (existing.has(key)) return false;
-    existing.add(key);
-    return true;
-  });
-  const mergedMemos = [...quickMemos, ...additions];
-  try {
-    localStorage.setItem('static_quick_memos', JSON.stringify(mergedMemos));
-    setQuickMemos(mergedMemos);
-    result.static_quick_memos = {
-      imported: additions.length,
-      skipped: data.static_quick_memos.length - additions.length,
-      errors: [],
-    };
-  } catch (error) {
-    result.static_quick_memos = {
-      imported: 0,
-      skipped: 0,
-      errors: [getLocalizedErrorMessage(error, '다시 시도해 주세요.')],
-    };
-  }
   report(onProgress, 'static_quick_memos', {
     status: result.static_quick_memos.errors.length ? 'error' : 'done',
     ...result.static_quick_memos,
-    message: `${result.static_quick_memos.imported}개 추가, ${result.static_quick_memos.skipped}개 유지`,
+    message:
+      result.static_quick_memos.errors[0] ||
+      `${result.static_quick_memos.imported}개 추가, ${result.static_quick_memos.skipped}개 유지`,
   });
   return result;
 }
@@ -519,10 +512,7 @@ async function importStorageFiles(files, archive, userId, onProgress) {
 export async function restoreBackupZip({
   file,
   userId,
-  memoText,
-  quickMemos,
-  setMemoText,
-  setQuickMemos,
+  mergeBackupMemos,
   onProgress,
 }) {
   const { strFromU8, unzipSync } = await import('fflate');
@@ -554,12 +544,9 @@ export async function restoreBackupZip({
       onProgress,
     );
   }
-  const localResults = mergeLocalMemos(
+  const localResults = await mergeLocalMemos(
     validated.data.local,
-    memoText,
-    quickMemos,
-    setMemoText,
-    setQuickMemos,
+    mergeBackupMemos,
     onProgress,
   );
   results.static_memo = localResults.static_memo;

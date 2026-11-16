@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import CalendarWidget from './components/widgets/CalendarWidget';
@@ -23,6 +23,7 @@ import useScheduleEvents from './hooks/useScheduleEvents'
 import useProjects from './hooks/useProjects'
 import useUnifiedSearch from './hooks/useUnifiedSearch'
 import useTrash from './hooks/useTrash'
+import useQuickMemos from './hooks/useQuickMemos'
 
 const getTodayStr = () => {
   const d = new Date();
@@ -37,40 +38,19 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDate, setSelectedDate] = useState(getTodayStr());
 
-  const [memoText, setMemoText] = useState(
-    () => localStorage.getItem('static_memo') || ''
-  );
-
-  const [quickMemos, setQuickMemos] = useState(() => {
-    const saved = localStorage.getItem('static_quick_memos');
-    return saved
-      ? JSON.parse(saved)
-      : [
-          {
-            id: 1,
-            content: '아이디어: 키보드 단축키(Cmd+K) 검색 모달 추후 추가하기',
-            createdAt: '2026. 11. 16.',
-          },
-        ];
-  });
-
-  useEffect(() => {
-    localStorage.setItem('static_memo', memoText);
-  }, [memoText]);
-  useEffect(() => {
-    localStorage.setItem('static_quick_memos', JSON.stringify(quickMemos));
-  }, [quickMemos]);
-  const handleSaveMemo = (text) => {
-    localStorage.setItem('static_memo', text);
-    const newQuick = {
-      id: Date.now(),
-      content: text.trim(),
-      createdAt: new Date().toLocaleDateString(),
-    };
-    setQuickMemos([newQuick, ...quickMemos]);
-  };
-
   const { user, isLoading } = useAuth()
+  const {
+    memoText,
+    setMemoText,
+    quickMemos,
+    createQuickMemo,
+    updateQuickMemo,
+    deleteQuickMemo,
+    mergeBackupMemos,
+    isLoading: areMemosLoading,
+    error: memosError,
+    retry: retryMemos,
+  } = useQuickMemos(user?.id)
   const {
     items: trash,
     isLoading: isTrashLoading,
@@ -139,14 +119,19 @@ export default function App() {
   };
 
   const archiveQuickMemo = async (memo) => {
-    await addTrashItem({
+    const trashItem = await addTrashItem({
       id: memo.id,
       title: memo.content.slice(0, 25) + '...',
       content: memo.content,
       createdAt: memo.createdAt,
       type: 'QUICK_MEMO',
     });
-    setQuickMemos((current) => current.filter((item) => item.id !== memo.id));
+    try {
+      await deleteQuickMemo(memo.id);
+    } catch (deleteError) {
+      await deleteTrashItem(trashItem.id);
+      throw deleteError;
+    }
   };
 
   const restoreFromTrash = async (item) => {
@@ -154,17 +139,18 @@ export default function App() {
       if (item.type === 'NOTE') {
         await createNote(item.itemData);
       } else if (item.type === 'QUICK_MEMO') {
-        const memo = {
+        const restoredMemo = await createQuickMemo(item.itemData.content, {
           id: item.itemData.id,
-          content: item.itemData.content,
           createdAt: item.itemData.createdAt || item.deletedAt,
-        };
-        const restoredMemos = [
-          memo,
-          ...quickMemos.filter((entry) => entry.id !== memo.id),
-        ];
-        localStorage.setItem('static_quick_memos', JSON.stringify(restoredMemos));
-        setQuickMemos(restoredMemos);
+          ifMissing: true,
+        });
+        try {
+          await deleteTrashItem(item.id);
+        } catch (deleteError) {
+          if (restoredMemo) await deleteQuickMemo(restoredMemo.id);
+          throw deleteError;
+        }
+        return;
       }
       await deleteTrashItem(item.id);
     } catch {
@@ -264,6 +250,20 @@ if (!user) return <AuthPage />
               </button>
             </div>
           )}
+          {memosError && (
+            <div
+              role="alert"
+              className="mb-4 rounded border border-red-300 bg-red-50 p-3 text-[12px] text-red-800"
+            >
+              <p>{memosError}</p>
+              <button
+                onClick={retryMemos}
+                className="mt-2 font-bold underline cursor-pointer"
+              >
+                다시 시도
+              </button>
+            </div>
+          )}
           {tasksError && (
             <div
               role="alert"
@@ -337,7 +337,8 @@ if (!user) return <AuthPage />
               <MemoWidget
                 memoText={memoText}
                 setMemoText={setMemoText}
-                onSaveMemo={handleSaveMemo}
+                onSaveMemo={createQuickMemo}
+                isLoading={areMemosLoading || Boolean(memosError)}
               />
             </div>
           )}
@@ -376,8 +377,10 @@ if (!user) return <AuthPage />
           {activeMenu === 'quick_memo' && (
             <QuickMemoPage
               quickMemos={quickMemos}
-              setQuickMemos={setQuickMemos}
+              onCreateMemo={createQuickMemo}
+              onUpdateMemo={updateQuickMemo}
               onMoveToTrash={archiveQuickMemo}
+              isLoading={areMemosLoading || Boolean(memosError)}
             />
           )}
 
@@ -436,9 +439,8 @@ if (!user) return <AuthPage />
               key={user.id}
               userId={user.id}
               memoText={memoText}
-              setMemoText={setMemoText}
               quickMemos={quickMemos}
-              setQuickMemos={setQuickMemos}
+              mergeBackupMemos={mergeBackupMemos}
               onRestoreComplete={() => {
                 retryNotes();
                 retryFolders();

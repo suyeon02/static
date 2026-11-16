@@ -24,9 +24,8 @@ function getErrorMessage(error) {
 export default function BackupPage({
   userId,
   memoText,
-  setMemoText,
   quickMemos,
-  setQuickMemos,
+  mergeBackupMemos,
   onRestoreComplete,
 }) {
   const [backupFile, setBackupFile] = useState(null);
@@ -84,10 +83,7 @@ export default function BackupPage({
       const results = await restoreBackupZip({
         file: backupFile,
         userId,
-        memoText,
-        quickMemos,
-        setMemoText,
-        setQuickMemos,
+        mergeBackupMemos,
         onProgress: updateProgress,
       });
       const errorCount = Object.values(results).reduce(
