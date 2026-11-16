@@ -332,7 +332,7 @@
   background: transparent;
   cursor: pointer;
   transform: translate(-50%, -145px);
-  animation: auth-wander 12s ease-in-out infinite;
+  animation: auth-wander 16s ease-in-out infinite;
   will-change: transform;
 }
 
@@ -559,11 +559,25 @@
 
 @keyframes auth-wander {
   0%,
-  100% { transform: translate(-50%, -145px); }
-  18% { transform: translate(calc(-50% - 105px), calc(-145px + 55px)); }
-  38% { transform: translate(calc(-50% - 45px), calc(-145px + 185px)); }
-  60% { transform: translate(calc(-50% + 120px), calc(-145px + 165px)); }
-  80% { transform: translate(calc(-50% + 100px), calc(-145px - 10px)); }
+  100% { transform: translate(-50%, -145px) rotate(0) scale(1); }
+  6% { transform: translate(-50%, calc(-145px + 10px)) rotate(0) scale(1); }
+  10% { transform: translate(calc(-50% - 70px), calc(-145px - 70px)) rotate(-18deg) scale(0.88, 1.12); }
+  14% { transform: translate(calc(-50% - 70px), calc(-145px + 20px)) rotate(10deg) scale(1.12, 0.88); }
+  18% { transform: translate(calc(-50% - 70px), -145px) rotate(-3deg) scale(1); }
+  24% { transform: translate(calc(-50% - 70px), -145px) rotate(0) scale(1); }
+  31% { transform: translate(calc(-50% - 120px), calc(-145px + 30px)) rotate(-12deg) scale(1); }
+  35% { transform: translate(calc(-50% - 120px), calc(-145px - 80px)) rotate(-18deg) scale(0.9, 1.1); }
+  39% { transform: translate(calc(-50% - 120px), calc(-145px + 25px)) rotate(12deg) scale(1.12, 0.88); }
+  43% { transform: translate(calc(-50% - 90px), calc(-145px + 10px)) rotate(0) scale(1); }
+  50% { transform: translate(calc(-50% + 55px), calc(-145px + 110px)) rotate(14deg) scale(1); }
+  55% { transform: translate(calc(-50% + 75px), calc(-145px - 65px)) rotate(20deg) scale(0.9, 1.1); }
+  59% { transform: translate(calc(-50% + 75px), calc(-145px + 20px)) rotate(-12deg) scale(1.12, 0.88); }
+  63% { transform: translate(calc(-50% + 75px), calc(-145px + 5px)) rotate(0) scale(1); }
+  71% { transform: translate(calc(-50% + 125px), calc(-145px + 40px)) rotate(12deg) scale(1); }
+  76% { transform: translate(calc(-50% + 105px), calc(-145px - 75px)) rotate(20deg) scale(0.9, 1.1); }
+  80% { transform: translate(calc(-50% + 105px), calc(-145px + 20px)) rotate(-14deg) scale(1.1, 0.9); }
+  84% { transform: translate(calc(-50% + 70px), calc(-145px + 5px)) rotate(0) scale(1); }
+  92% { transform: translate(calc(-50% - 20px), calc(-145px - 25px)) rotate(-8deg) scale(1); }
 }
 
 @keyframes auth-heartbeat {
