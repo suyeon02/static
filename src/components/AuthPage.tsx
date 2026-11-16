@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { getLocalizedErrorMessage } from '../lib/userFacingError'
 import './AuthPage.css'
@@ -14,6 +14,11 @@ export default function AuthPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
+  const [terminalInput, setTerminalInput] = useState('')
+  const [terminalOutput, setTerminalOutput] = useState('')
+  const [mascotMessage, setMascotMessage] = useState('안녕하세요!')
+  const [isMascotHappy, setIsMascotHappy] = useState(false)
+  const emailInputRef = useRef<HTMLInputElement>(null)
 
   const switchMode = (nextMode: Mode) => {
     setMode(nextMode)
@@ -59,11 +64,57 @@ export default function AuthPage() {
     }
   }
 
+  function handleTerminalSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const command = terminalInput.trim().toLowerCase()
+    setTerminalInput('')
+    if (!command) return
+
+    switch (command) {
+      case 'help':
+        setTerminalOutput('사용 가능한 명령: blob, talk, status, login, clear')
+        break
+      case 'blob':
+      case 'cat':
+      case 'pet':
+        setTerminalOutput('데이터 슬라임을 불렀어요!')
+        setMascotMessage('히히, 불렀어요?')
+        setIsMascotHappy(true)
+        break
+      case 'talk':
+      case 'hello':
+      case 'hi':
+        setTerminalOutput('슬라임이 인사를 전해요.')
+        setMascotMessage('반가워요!')
+        setIsMascotHappy(true)
+        break
+      case 'login':
+        setTerminalOutput('이메일 입력란으로 이동합니다.')
+        emailInputRef.current?.focus()
+        break
+      case 'status':
+        setTerminalOutput(
+          `시스템: 온라인 · 슬라임: ${isMascotHappy ? '행복' : '대기 중'}`,
+        )
+        break
+      case 'clear':
+        setTerminalOutput('')
+        break
+      default:
+        setTerminalOutput(`알 수 없는 명령: ${command}`)
+    }
+  }
+
+  function handleMascotClick() {
+    setMascotMessage('잘했어요! 데이터 충전 완료')
+    setIsMascotHappy(true)
+  }
+
   return (
     <main className="auth-page">
       <section className="auth-card" aria-labelledby="auth-title">
         <div className="auth-brand">
-          <span className="auth-brand-mark" aria-hidden="true">✳</span>
+          <span className="auth-brand-mark" aria-hidden="true" />
           <span>STATIC</span>
         </div>
 
@@ -87,7 +138,7 @@ export default function AuthPage() {
             className={mode === 'login' ? 'is-active' : ''}
             onClick={() => switchMode('login')}
           >
-            로그인
+            ./login
           </button>
           <button
             type="button"
@@ -96,7 +147,7 @@ export default function AuthPage() {
             className={mode === 'signup' ? 'is-active' : ''}
             onClick={() => switchMode('signup')}
           >
-            회원가입
+            ./register
           </button>
         </div>
 
@@ -104,43 +155,60 @@ export default function AuthPage() {
           {mode === 'signup' && (
             <label>
               이름
-              <input
-                autoComplete="name"
-                value={displayName}
-                onChange={(event) => setDisplayName(event.target.value)}
-                placeholder="이름 또는 닉네임"
-                maxLength={40}
-              />
+              <span className="auth-input-wrap">
+                <input
+                  autoComplete="name"
+                  value={displayName}
+                  onChange={(event) => setDisplayName(event.target.value)}
+                  placeholder="이름 또는 닉네임"
+                  maxLength={40}
+                />
+              </span>
             </label>
           )}
 
           <label>
             이메일
-            <input
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="name@example.com"
-              required
-            />
+            <span className="auth-input-wrap">
+              <input
+                type="email"
+                autoComplete="email"
+                ref={emailInputRef}
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="name@example.com"
+                required
+              />
+            </span>
           </label>
 
           <label>
             비밀번호
-            <input
-              type="password"
-              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="8자 이상 입력"
-              minLength={8}
-              required
-            />
+            <span className="auth-input-wrap">
+              <input
+                type="password"
+                autoComplete={
+                  mode === 'login' ? 'current-password' : 'new-password'
+                }
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="8자 이상 입력"
+                minLength={8}
+                required
+              />
+            </span>
           </label>
 
-          {errorMessage && <p className="auth-alert is-error" role="alert">{errorMessage}</p>}
-          {message && <p className="auth-alert is-success" role="status">{message}</p>}
+          {errorMessage && (
+            <p className="auth-alert is-error" role="alert">
+              {errorMessage}
+            </p>
+          )}
+          {message && (
+            <p className="auth-alert is-success" role="status">
+              {message}
+            </p>
+          )}
 
           <button className="auth-submit" type="submit" disabled={isSubmitting}>
             {isSubmitting
@@ -156,18 +224,81 @@ export default function AuthPage() {
           로그인하면 나의 자료와 일정이 계정에 안전하게 연결됩니다.
         </p>
       </section>
-      <aside className="auth-side" aria-hidden="true">
-        <div className="auth-side-orb orb-one" />
-        <div className="auth-side-orb orb-two" />
+      <aside className="auth-side" aria-label="STATIC 소개">
+        <div className="auth-side-pattern" aria-hidden="true" />
+        <button
+          className={`auth-mascot${isMascotHappy ? ' is-happy' : ''}`}
+          type="button"
+          onClick={handleMascotClick}
+          aria-label="초록 슬라임과 인사하기"
+        >
+          <span className="auth-mascot-ribbon" aria-hidden="true">
+            <span />
+          </span>
+          <span className="auth-mascot-body" aria-hidden="true" />
+          <span className="auth-mascot-face" aria-hidden="true">
+            <span className="auth-mascot-blush" />
+            <span className="auth-mascot-eye" />
+            <span className="auth-mascot-eye" />
+            <span className="auth-mascot-blush" />
+            <span className="auth-mascot-mouth" />
+          </span>
+          <span className="auth-mascot-tag" aria-hidden="true">
+            heart_blob.exe
+          </span>
+          <span className="auth-mascot-speech" aria-live="polite">
+            {mascotMessage}
+          </span>
+        </button>
+
+        <div className="auth-side-header">
+          <span>
+            <i aria-hidden="true" /> WELCOME
+          </span>
+          <span className="auth-side-badge">// MY DESK</span>
+        </div>
+
         <div className="auth-side-content">
-          <span className="auth-side-kicker">ONE PLACE FOR EVERYTHING</span>
-          <h2>생각은 가볍게,<br />정리는 단단하게.</h2>
-          <p>노트, 일정, 프로젝트와 나만의 AI 도구를<br />한곳에서 관리하세요.</p>
+          <p>
+            노트, 일정, 프로젝트와 나만의 AI 도구를
+            <br />
+            한곳에서 관리하세요.
+            <span className="auth-cursor" aria-hidden="true">
+              _
+            </span>
+          </p>
+          <span className="auth-side-kicker">// DATA BLOB DETECTED</span>
           <div className="auth-side-pills">
-            <span>NOTES</span><span>PLANNER</span><span>AI LIBRARY</span>
+            <span>[ NOTES ]</span>
+            <span>[ PLANNER ]</span>
+            <span>[ AI LIBRARY ]</span>
           </div>
         </div>
-        <div className="auth-side-bottom">STATIC · YOUR SPACE</div>
+
+        <div className="auth-terminal">
+          <form
+            onSubmit={handleTerminalSubmit}
+            className="auth-terminal-form"
+          >
+            <label htmlFor="auth-terminal-input">guest@static:~$</label>
+            <input
+              id="auth-terminal-input"
+              value={terminalInput}
+              onChange={(event) => setTerminalInput(event.target.value)}
+              placeholder="help 또는 blob 입력..."
+              autoComplete="off"
+              aria-label="STATIC 미니 터미널 명령"
+            />
+          </form>
+          <p className="auth-terminal-output" role="status" aria-live="polite">
+            {terminalOutput}
+          </p>
+        </div>
+
+        <div className="auth-side-bottom">
+          <span><i aria-hidden="true" /> SYSTEM ONLINE</span>
+          <span>MY DESK · YOUR SPACE</span>
+        </div>
       </aside>
     </main>
   )
