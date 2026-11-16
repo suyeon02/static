@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { getLocalizedErrorMessage } from '../lib/userFacingError'
 import './AuthPage.css'
@@ -17,8 +17,46 @@ export default function AuthPage() {
   const [terminalInput, setTerminalInput] = useState('')
   const [terminalOutput, setTerminalOutput] = useState('')
   const [mascotMessage, setMascotMessage] = useState('안녕하세요!')
+  const [isMascotSpeaking, setIsMascotSpeaking] = useState(false)
   const [isMascotHappy, setIsMascotHappy] = useState(false)
   const emailInputRef = useRef<HTMLInputElement>(null)
+  const mascotRef = useRef<HTMLButtonElement>(null)
+  const mascotFaceRef = useRef<HTMLSpanElement>(null)
+  const isPointerNearMascotRef = useRef(false)
+  const speechTimeoutRef = useRef<number | null>(null)
+  const speechFrameRef = useRef<number | null>(null)
+
+  useEffect(
+    () => () => {
+      if (speechTimeoutRef.current !== null) {
+        window.clearTimeout(speechTimeoutRef.current)
+      }
+      if (speechFrameRef.current !== null) {
+        window.cancelAnimationFrame(speechFrameRef.current)
+      }
+    },
+    [],
+  )
+
+  function showMascotSpeech(text: string) {
+    if (speechTimeoutRef.current !== null) {
+      window.clearTimeout(speechTimeoutRef.current)
+    }
+    if (speechFrameRef.current !== null) {
+      window.cancelAnimationFrame(speechFrameRef.current)
+    }
+
+    setIsMascotSpeaking(false)
+    setMascotMessage(text)
+    speechFrameRef.current = window.requestAnimationFrame(() => {
+      setIsMascotSpeaking(true)
+      speechFrameRef.current = null
+    })
+    speechTimeoutRef.current = window.setTimeout(() => {
+      setIsMascotSpeaking(false)
+      speechTimeoutRef.current = null
+    }, 2400)
+  }
 
   const switchMode = (nextMode: Mode) => {
     setMode(nextMode)
@@ -78,14 +116,14 @@ export default function AuthPage() {
       case 'cat':
       case 'pet':
         setTerminalOutput('데이터 슬라임을 불렀어요!')
-        setMascotMessage('히히, 불렀어요?')
+        showMascotSpeech('히히, 불렀어요?')
         setIsMascotHappy(true)
         break
       case 'talk':
       case 'hello':
       case 'hi':
         setTerminalOutput('슬라임이 인사를 전해요.')
-        setMascotMessage('반가워요!')
+        showMascotSpeech('반가워요!')
         setIsMascotHappy(true)
         break
       case 'login':
@@ -105,8 +143,57 @@ export default function AuthPage() {
     }
   }
 
+  function handleSidePointerMove(event: ReactPointerEvent<HTMLElement>) {
+    const mascot = mascotRef.current
+    const face = mascotFaceRef.current
+    if (!mascot || !face) return
+
+    const mascotBounds = mascot.getBoundingClientRect()
+    const deltaX = event.clientX - (mascotBounds.left + mascotBounds.width / 2)
+    const deltaY = event.clientY - (mascotBounds.top + mascotBounds.height / 2)
+    const distance = Math.hypot(deltaX, deltaY)
+    const isNearMascot = distance < 170
+
+    if (isNearMascot && !isPointerNearMascotRef.current) {
+      showMascotSpeech('잡아봐요!')
+    }
+    if (distance > 220) isPointerNearMascotRef.current = false
+    else if (isNearMascot) isPointerNearMascotRef.current = true
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      mascot.style.setProperty('translate', '0px 0px')
+      face.style.transform = ''
+      return
+    }
+
+    if (distance < 220 && distance > 0) {
+      const directionX = deltaX / distance
+      const directionY = deltaY / distance
+      const offset = distance < 80 ? -34 : Math.min(28, (distance - 80) * 0.2)
+      mascot.style.setProperty(
+        'translate',
+        `${directionX * offset}px ${directionY * offset}px`,
+      )
+      face.style.transform = `translate(${directionX * 3}px, ${directionY * 3}px)`
+      return
+    }
+
+    mascot.style.setProperty('translate', '0px 0px')
+    face.style.transform = ''
+  }
+
+  function handleSidePointerLeave() {
+    isPointerNearMascotRef.current = false
+    mascotRef.current?.style.setProperty('translate', '0px 0px')
+    if (mascotFaceRef.current) mascotFaceRef.current.style.transform = ''
+  }
+
+  function handleMascotFocus() {
+    showMascotSpeech('마우스로 놀아봐요!')
+  }
+
   function handleMascotClick() {
-    setMascotMessage('잘했어요! 데이터 충전 완료')
+    showMascotSpeech('잘했어요! 데이터 충전 완료')
     setIsMascotHappy(true)
   }
 
@@ -224,19 +311,26 @@ export default function AuthPage() {
           로그인하면 나의 자료와 일정이 계정에 안전하게 연결됩니다.
         </p>
       </section>
-      <aside className="auth-side" aria-label="STATIC 소개">
+      <aside
+        className="auth-side"
+        aria-label="STATIC 소개"
+        onPointerMove={handleSidePointerMove}
+        onPointerLeave={handleSidePointerLeave}
+      >
         <div className="auth-side-pattern" aria-hidden="true" />
         <button
-          className={`auth-mascot${isMascotHappy ? ' is-happy' : ''}`}
+          ref={mascotRef}
+          className={`auth-mascot${isMascotHappy ? ' is-happy' : ''}${isMascotSpeaking ? ' is-speaking' : ''}`}
           type="button"
           onClick={handleMascotClick}
+          onFocus={handleMascotFocus}
           aria-label="초록 슬라임과 인사하기"
         >
           <span className="auth-mascot-ribbon" aria-hidden="true">
             <span />
           </span>
           <span className="auth-mascot-body" aria-hidden="true" />
-          <span className="auth-mascot-face" aria-hidden="true">
+          <span className="auth-mascot-face" ref={mascotFaceRef} aria-hidden="true">
             <span className="auth-mascot-blush" />
             <span className="auth-mascot-eye" />
             <span className="auth-mascot-eye" />
