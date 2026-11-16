@@ -332,6 +332,8 @@
   background: transparent;
   cursor: pointer;
   transform: translate(-50%, -145px);
+  animation: auth-wander 12s ease-in-out infinite;
+  will-change: transform;
 }
 
 .auth-mascot-body {
@@ -555,6 +557,15 @@
   50% { border-radius: 60% 40% 50% 50% / 30% 40% 60% 70%; }
 }
 
+@keyframes auth-wander {
+  0%,
+  100% { transform: translate(-50%, -145px); }
+  18% { transform: translate(calc(-50% - 105px), calc(-145px + 55px)); }
+  38% { transform: translate(calc(-50% - 45px), calc(-145px + 185px)); }
+  60% { transform: translate(calc(-50% + 120px), calc(-145px + 165px)); }
+  80% { transform: translate(calc(-50% + 100px), calc(-145px - 10px)); }
+}
+
 @keyframes auth-heartbeat {
   0%,
   100% { transform: scale(1); }
@@ -621,6 +632,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .auth-mascot,
   .auth-mascot-body,
   .auth-mascot.is-happy .auth-mascot-body,
   .auth-mascot-eye,
