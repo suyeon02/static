@@ -26,6 +26,7 @@ import useProjects from './hooks/useProjects'
 import useUnifiedSearch from './hooks/useUnifiedSearch'
 import useTrash from './hooks/useTrash'
 import useQuickMemos from './hooks/useQuickMemos'
+import useHashPage from './hooks/useHashPage'
 
 const PAGE_META = {
   dashboard: { title: 'DASHBOARD', description: '오늘의 일정, 할 일, 메모를 한눈에 확인하세요.' },
@@ -50,7 +51,7 @@ const getTodayStr = () => {
 };
 
 export default function App() {
-  const [activeMenu, setActiveMenu] = useState('dashboard');
+  const [activeMenu, setActiveMenu] = useHashPage(PAGE_META, 'dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDate, setSelectedDate] = useState(getTodayStr());
