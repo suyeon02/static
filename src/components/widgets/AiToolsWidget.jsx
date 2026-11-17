@@ -30,10 +30,10 @@ export default function AiToolsWidget() {
             <button
               key={cat}
               onClick={() => setFilter(cat)}
-              className={`px-1.5 py-0.5 text-[10px] font-bold rounded-[3px] cursor-pointer ${
-                filter === cat
-                  ? 'bg-black text-white'
-                  : 'bg-[#F0F0F0] text-[#666666] hover:text-black'
+              type="button"
+              aria-pressed={filter === cat}
+              className={`ui-segment ${
+                filter === cat ? 'ui-segment-active' : 'ui-segment-idle'
               }`}
             >
               {cat}
@@ -42,22 +42,22 @@ export default function AiToolsWidget() {
         </div>
       }
     >
-      <div className="grid grid-cols-2 gap-2 overflow-y-auto">
+      <div className="grid grid-cols-2 gap-2 overflow-y-auto content-start">
         {filtered.map((tool) => (
           <a
             key={tool.name}
             href={tool.url}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center justify-between p-2.5 bg-[#F5F5F5] hover:bg-black hover:text-white border border-black/10 rounded-[4px] transition-colors group"
+            className="group flex items-center justify-between gap-2 rounded border border-line-soft bg-canvas p-3 transition-colors hover:border-ink hover:bg-ink hover:text-white"
           >
             <div>
-              <div className="text-[12px] font-bold">{tool.name}</div>
-              <div className="text-[10px] text-[#666666] group-hover:text-neutral-300">
+              <div className="text-small font-bold">{tool.name}</div>
+              <div className="mt-0.5 text-meta text-muted group-hover:text-neutral-300">
                 [{tool.category}]
               </div>
             </div>
-            <ArrowUpRight size={14} />
+            <ArrowUpRight size={14} className="shrink-0" aria-hidden="true" />
           </a>
         ))}
       </div>

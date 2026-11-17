@@ -14,7 +14,9 @@ import BookmarksPage from './components/pages/BookmarksPage';
 import FavoritesPage from './components/pages/FavoritesPage';
 import FilesPage from './components/pages/FilesPage';
 import BackupPage from './components/pages/BackupPage';
-import { RotateCcw, Trash2 } from 'lucide-react';
+import TrashPage from './components/pages/TrashPage';
+import PageHeader from './components/common/PageHeader';
+import ErrorAlert from './components/common/ErrorAlert';
 import AuthPage from './components/AuthPage'
 import { useAuth } from './contexts/AuthContext'
 import useNotes from './hooks/useNotes'
@@ -24,6 +26,21 @@ import useProjects from './hooks/useProjects'
 import useUnifiedSearch from './hooks/useUnifiedSearch'
 import useTrash from './hooks/useTrash'
 import useQuickMemos from './hooks/useQuickMemos'
+
+const PAGE_META = {
+  dashboard: { title: 'DASHBOARD', description: '오늘의 일정, 할 일, 메모를 한눈에 확인하세요.' },
+  favorites: { title: 'FAVORITES', description: '즐겨찾기한 노트, 프로젝트, 북마크를 모아 봅니다.' },
+  notes: { title: 'NOTES', description: '폴더와 태그로 마크다운 노트를 정리하세요.' },
+  quick_memo: { title: 'QUICK_MEMO', description: '떠오른 생각을 빠르게 기록하세요.' },
+  projects: { title: 'PROJECTS', description: '프로젝트 상태와 진행률을 관리하세요.' },
+  schedule: { title: 'SCHEDULE', description: '날짜를 선택해 일정을 확인하고 추가하세요.' },
+  tasks: { title: 'TASKS', description: '할 일과 마감일을 관리하세요.' },
+  files: { title: 'FILES', description: '파일을 업로드하고 내려받으세요. 파일당 최대 10MB.' },
+  bookmarks: { title: 'BOOKMARKS', description: '자주 찾는 링크를 저장하세요.' },
+  ai_tools: { title: 'AI_TOOLS', description: '자주 쓰는 AI 도구로 바로 이동하세요.' },
+  trash: { title: 'TRASH', description: '삭제한 항목을 복원하거나 영구 삭제하세요.' },
+  backup: { title: 'BACKUP', description: '전체 데이터를 ZIP으로 백업하고 복원하세요.' },
+};
 
 const getTodayStr = () => {
   const d = new Date();
@@ -197,12 +214,27 @@ export default function App() {
     setSearchQuery('');
   };
 
-    if (isLoading) return <div>불러오는 중...</div>
-if (!user) return <AuthPage />
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-canvas text-small text-muted">
+        불러오는 중...
+      </div>
+    );
+  }
+  if (!user) return <AuthPage />;
 
-  return ( 
-    
-    <div className="min-h-screen md:h-screen flex bg-[#F5F5F5] text-black overflow-x-hidden md:overflow-hidden">
+  const pageMeta = PAGE_META[activeMenu];
+  const persistenceErrors = [
+    { key: 'notes', message: notesError, onRetry: retryNotes },
+    { key: 'trash', message: trashError, onRetry: retryTrash },
+    { key: 'memos', message: memosError, onRetry: retryMemos },
+    { key: 'tasks', message: tasksError, onRetry: retryTasks },
+    { key: 'schedules', message: schedulesError, onRetry: retrySchedules },
+    { key: 'projects', message: projectsError, onRetry: retryProjects },
+  ].filter((item) => item.message);
+
+  return (
+    <div className="min-h-screen md:h-screen flex bg-canvas text-ink overflow-x-hidden md:overflow-hidden">
       <Sidebar
         activeMenu={activeMenu}
         onSelectMenu={setActiveMenu}
@@ -222,88 +254,14 @@ if (!user) return <AuthPage />
         />
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8">
-          {notesError && (
-            <div
-              role="alert"
-              className="mb-4 rounded border border-red-300 bg-red-50 p-3 text-[12px] text-red-800"
-            >
-              <p>{notesError}</p>
-              <button
-                onClick={retryNotes}
-                className="mt-2 font-bold underline cursor-pointer"
-              >
-                다시 시도
-              </button>
-            </div>
+          {pageMeta && (
+            <PageHeader title={pageMeta.title} description={pageMeta.description} />
           )}
-          {trashError && (
-            <div
-              role="alert"
-              className="mb-4 rounded border border-red-300 bg-red-50 p-3 text-[12px] text-red-800"
-            >
-              <p>{trashError}</p>
-              <button
-                onClick={retryTrash}
-                className="mt-2 font-bold underline cursor-pointer"
-              >
-                다시 시도
-              </button>
-            </div>
-          )}
-          {memosError && (
-            <div
-              role="alert"
-              className="mb-4 rounded border border-red-300 bg-red-50 p-3 text-[12px] text-red-800"
-            >
-              <p>{memosError}</p>
-              <button
-                onClick={retryMemos}
-                className="mt-2 font-bold underline cursor-pointer"
-              >
-                다시 시도
-              </button>
-            </div>
-          )}
-          {tasksError && (
-            <div
-              role="alert"
-              className="mb-4 rounded border border-red-300 bg-red-50 p-3 text-[12px] text-red-800"
-            >
-              <p>{tasksError}</p>
-              <button
-                onClick={retryTasks}
-                className="mt-2 font-bold underline cursor-pointer"
-              >
-                다시 시도
-              </button>
-            </div>
-          )}
-          {schedulesError && (
-            <div
-              role="alert"
-              className="mb-4 rounded border border-red-300 bg-red-50 p-3 text-[12px] text-red-800"
-            >
-              <p>{schedulesError}</p>
-              <button
-                onClick={retrySchedules}
-                className="mt-2 font-bold underline cursor-pointer"
-              >
-                다시 시도
-              </button>
-            </div>
-          )}
-          {projectsError && (
-            <div
-              role="alert"
-              className="mb-4 rounded border border-red-300 bg-red-50 p-3 text-[12px] text-red-800"
-            >
-              <p>{projectsError}</p>
-              <button
-                onClick={retryProjects}
-                className="mt-2 font-bold underline cursor-pointer"
-              >
-                다시 시도
-              </button>
+          {persistenceErrors.length > 0 && (
+            <div className="mb-6 space-y-2">
+              {persistenceErrors.map((item) => (
+                <ErrorAlert key={item.key} message={item.message} onRetry={item.onRetry} />
+              ))}
             </div>
           )}
           {activeMenu === 'dashboard' && (
@@ -413,7 +371,7 @@ if (!user) return <AuthPage />
           )}
 
           {activeMenu === 'tasks' && (
-            <div className="max-w-2xl">
+            <div className="max-w-3xl">
               <TodoWidget
                 todos={filteredTodos}
                 isLoading={isTasksLoading}
@@ -459,60 +417,13 @@ if (!user) return <AuthPage />
           )}
 
           {activeMenu === 'trash' && (
-            <div className="bg-white border border-[#CCCCCC] rounded-[8px] p-6 max-w-3xl">
-              <div className="flex justify-between items-center border-b border-[#E6E6E6] pb-3 mb-4">
-                <h2 className="text-[15px] font-bold">
-                  // TRASH ({trash.length})
-                </h2>
-                {trash.length > 0 && (
-                  <button
-                    onClick={handleEmptyTrash}
-                    className="text-[11px] font-bold text-[#666666] hover:text-black cursor-pointer"
-                  >
-                    EMPTY TRASH
-                  </button>
-                )}
-              </div>
-              {isTrashLoading ? (
-                <p className="text-[12px] text-[#666666] py-6 text-center">
-                  Loading trash...
-                </p>
-              ) : trash.length === 0 ? (
-                <p className="text-[12px] text-[#666666] py-6 text-center">
-                  Trash is empty.
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {trash.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center justify-between p-3 bg-[#F5F5F5] rounded-[4px] text-[12px]"
-                    >
-                      <div>
-                        <span className="font-bold mr-2">[{item.type}]</span>
-                        <span>{item.title}</span>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => restoreFromTrash(item)}
-                          className="p-1.5 bg-white border border-black/20 rounded hover:border-black cursor-pointer"
-                          title="Restore"
-                        >
-                          <RotateCcw size={13} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteTrashItem(item.id)}
-                          className="p-1.5 bg-white border border-black/20 rounded hover:border-black cursor-pointer"
-                          title="Delete permanently"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <TrashPage
+              items={trash}
+              isLoading={isTrashLoading}
+              onRestore={restoreFromTrash}
+              onDelete={handleDeleteTrashItem}
+              onEmpty={handleEmptyTrash}
+            />
           )}
         </div>
       </main>

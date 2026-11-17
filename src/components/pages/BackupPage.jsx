@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Archive, Download, FileUp, LoaderCircle } from 'lucide-react';
 import { createBackupZip, restoreBackupZip } from '../../lib/backup';
 import { getLocalizedErrorMessage } from '../../lib/userFacingError';
+import CardHeader from '../common/CardHeader';
 
 const CATEGORY_LABELS = {
   archive: 'Backup validation',
@@ -107,12 +108,9 @@ export default function BackupPage({
 
   return (
     <div className="max-w-3xl space-y-6">
-      <section className="space-y-4 rounded-[8px] border border-[#CCCCCC] bg-white p-5">
-        <div className="flex items-center gap-2 border-b border-[#E6E6E6] pb-3">
-          <Archive size={17} />
-          <h2 className="text-[14px] font-bold">// FULL DATA BACKUP</h2>
-        </div>
-        <p className="text-[12px] leading-relaxed text-[#555555]">
+      <section className="ui-card space-y-4">
+        <CardHeader title="FULL DATA BACKUP" icon={Archive} />
+        <p className="text-small leading-relaxed text-muted">
           Download a ZIP containing your signed-in account&apos;s notes, folders,
           tasks, events, projects, bookmarks, trash, local memos, and every
           uploaded file with its original filename.
@@ -121,7 +119,7 @@ export default function BackupPage({
           type="button"
           onClick={handleCreateBackup}
           disabled={isBusy}
-          className="flex cursor-pointer items-center gap-2 rounded-[4px] bg-black px-3 py-2 text-[11px] font-bold text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-40"
+          className="ui-btn ui-btn-primary"
         >
           {busyAction === 'export' ? (
             <LoaderCircle size={14} className="animate-spin" />
@@ -132,18 +130,15 @@ export default function BackupPage({
         </button>
       </section>
 
-      <section className="space-y-4 rounded-[8px] border border-[#CCCCCC] bg-white p-5">
-        <div className="flex items-center gap-2 border-b border-[#E6E6E6] pb-3">
-          <FileUp size={17} />
-          <h2 className="text-[14px] font-bold">// RESTORE FROM ZIP</h2>
-        </div>
-        <p className="text-[12px] leading-relaxed text-[#555555]">
+      <section className="ui-card space-y-4">
+        <CardHeader title="RESTORE FROM ZIP" icon={FileUp} />
+        <p className="text-small leading-relaxed text-muted">
           Restore uses merge mode: existing data and files always win. Records
           with duplicate IDs and files with duplicate paths are skipped, not
           overwritten. Folders are imported before notes. Restored data is
           associated with the currently signed-in account.
         </p>
-        <label className="block space-y-1.5 text-[11px] font-bold">
+        <label className="block space-y-1.5 text-small font-bold">
           STATIC backup ZIP
           <input
             ref={fileInputRef}
@@ -156,17 +151,17 @@ export default function BackupPage({
               setOperationError('');
               setCompletedAction('');
             }}
-            className="w-full cursor-pointer rounded-[4px] border border-black/15 bg-[#F0F0F0] px-3 py-2 text-[12px] font-normal file:mr-3 file:cursor-pointer file:border-0 file:bg-black file:px-3 file:py-1 file:text-[11px] file:font-bold file:text-white disabled:opacity-40"
+            className="w-full cursor-pointer rounded border border-line bg-subtle px-2 py-1.5 text-small font-normal file:mr-3 file:h-7 file:cursor-pointer file:rounded file:border-0 file:bg-ink file:px-3 file:text-meta file:font-bold file:text-white disabled:cursor-not-allowed disabled:opacity-40"
           />
         </label>
         {backupFile && (
-          <p className="text-[11px] text-[#666666]">{backupFile.name}</p>
+          <p className="text-meta text-muted">{backupFile.name}</p>
         )}
         <button
           type="button"
           onClick={handleRestore}
           disabled={!backupFile || isBusy}
-          className="flex cursor-pointer items-center gap-2 rounded-[4px] border border-black px-3 py-2 text-[11px] font-bold hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+          className="ui-btn ui-btn-secondary"
         >
           {busyAction === 'restore' ? (
             <LoaderCircle size={14} className="animate-spin" />
@@ -180,14 +175,14 @@ export default function BackupPage({
       {(completedAction || operationError || Object.keys(progress).length > 0) && (
         <section
           aria-live="polite"
-          className="space-y-3 rounded-[8px] border border-[#CCCCCC] bg-white p-5"
+          className="ui-card space-y-3"
         >
-          <h2 className="text-[13px] font-bold">// OPERATION STATUS</h2>
+          <CardHeader title="OPERATION STATUS" />
           {completedAction && (
-            <p className="text-[12px] text-green-800">{completedAction}</p>
+            <p className="text-small text-green-800">{completedAction}</p>
           )}
           {operationError && (
-            <p role="alert" className="text-[12px] text-red-800">
+            <p role="alert" className="text-small text-red-800">
               {operationError}
             </p>
           )}
@@ -195,7 +190,7 @@ export default function BackupPage({
             {Object.entries(progress).map(([category, item]) => (
               <li
                 key={category}
-                className="rounded border border-[#E6E6E6] bg-[#FAFAFA] p-3 text-[11px]"
+                className="rounded border border-line-soft bg-canvas p-3 text-meta"
               >
                 <div className="flex items-center justify-between gap-3">
                   <span className="font-bold">
@@ -207,7 +202,7 @@ export default function BackupPage({
                         ? 'text-red-700'
                         : item.status === 'done'
                           ? 'text-green-800'
-                          : 'text-[#666666]'
+                          : 'text-muted'
                     }
                   >
                     {item.status === 'error' ? '오류' : item.status}
@@ -215,12 +210,12 @@ export default function BackupPage({
                 </div>
                 {item.total > 0 && (
                   <progress
-                    className="mt-2 h-1 w-full accent-black"
+                    className="mt-2 h-1 w-full accent-ink"
                     value={item.done || 0}
                     max={item.total}
                   />
                 )}
-                <p className="mt-1 break-words text-[#666666]">{item.message}</p>
+                <p className="mt-1 break-words text-muted">{item.message}</p>
                 {item.errors?.length > 0 && (
                   <ul className="mt-2 list-disc space-y-1 pl-4 text-red-800">
                     {item.errors.map((error, index) => (

@@ -8,22 +8,21 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getLocalizedErrorMessage } from '../../lib/userFacingError';
+import CardHeader from '../common/CardHeader';
+import ErrorAlert from '../common/ErrorAlert';
 
 const BOOKMARK_FIELDS = 'id, title, url, is_favorite';
 
 function FavoriteSection({ title, icon: Icon, children, isEmpty }) {
   return (
-    <section className="bg-white border border-[#CCCCCC] rounded-[8px] p-5">
-      <div className="flex items-center gap-2 border-b border-[#E6E6E6] pb-3 mb-3">
-        <Icon size={15} />
-        <h2 className="text-[13px] font-bold">// {title}</h2>
-      </div>
+    <section className="ui-card">
+      <CardHeader title={title} icon={Icon} />
       {isEmpty ? (
-        <p className="py-4 text-center text-[12px] text-[#666666]">
+        <p className="ui-empty">
           No favorites in this category.
         </p>
       ) : (
-        <ul className="divide-y divide-[#E6E6E6]">{children}</ul>
+        <ul className="divide-y divide-line-soft">{children}</ul>
       )}
     </section>
   );
@@ -37,11 +36,11 @@ function FavoriteRow({ title, subtitle, onOpen, onRemove, icon: Icon }) {
         onClick={onOpen}
         className="flex min-w-0 flex-1 items-center gap-3 text-left cursor-pointer"
       >
-        <Icon size={15} className="shrink-0 text-[#666666]" />
+        <Icon size={15} className="shrink-0 text-muted" aria-hidden="true" />
         <span className="min-w-0">
-          <span className="block truncate text-[12px] font-bold">{title}</span>
+          <span className="block truncate text-small font-bold">{title}</span>
           {subtitle && (
-            <span className="mt-1 block truncate text-[10px] text-[#666666]">
+            <span className="mt-1 block truncate text-meta text-muted">
               {subtitle}
             </span>
           )}
@@ -51,7 +50,7 @@ function FavoriteRow({ title, subtitle, onOpen, onRemove, icon: Icon }) {
         <button
           type="button"
           onClick={onOpen}
-          className="shrink-0 text-[10px] font-bold text-[#666666] hover:text-black cursor-pointer"
+          className="ui-btn ui-btn-secondary h-7 px-2 text-meta"
         >
           OPEN
         </button>
@@ -61,7 +60,7 @@ function FavoriteRow({ title, subtitle, onOpen, onRemove, icon: Icon }) {
         onClick={onRemove}
         aria-label={`Remove ${title} from favorites`}
         title="Remove from favorites"
-        className="shrink-0 p-1 text-amber-500 hover:text-amber-700 cursor-pointer"
+        className="ui-icon-btn text-amber-500 hover:text-amber-700"
       >
         <Star size={14} fill="currentColor" />
       </button>
@@ -150,32 +149,15 @@ export default function FavoritesPage({
   const favoriteProjects = projects.filter((project) => project.isFavorite);
 
   return (
-    <div className="max-w-3xl space-y-5">
-      <h1 className="flex items-center gap-2 text-[15px] font-bold">
-        <Star size={17} fill="currentColor" /> FAVORITES
-      </h1>
-      {error && (
-        <div
-          role="alert"
-          className="rounded border border-red-300 bg-red-50 p-3 text-[12px] text-red-800"
-        >
-          <p>{error}</p>
-          <button
-            type="button"
-            onClick={() => setRetryVersion((version) => version + 1)}
-            className="mt-2 font-bold underline cursor-pointer"
-          >
-            다시 시도
-          </button>
-        </div>
-      )}
+    <div className="max-w-3xl space-y-6">
+      <ErrorAlert message={error} onRetry={() => setRetryVersion((version) => version + 1)} />
       <FavoriteSection
         title={`NOTES (${favoriteNotes.length})`}
         icon={FileText}
         isEmpty={!isNotesLoading && favoriteNotes.length === 0}
       >
         {isNotesLoading ? (
-          <li className="py-4 text-center text-[12px] text-[#666666]">
+          <li className="ui-empty">
             Loading notes...
           </li>
         ) : (
@@ -197,7 +179,7 @@ export default function FavoritesPage({
         isEmpty={!isProjectsLoading && favoriteProjects.length === 0}
       >
         {isProjectsLoading ? (
-          <li className="py-4 text-center text-[12px] text-[#666666]">
+          <li className="ui-empty">
             Loading projects...
           </li>
         ) : (
@@ -221,7 +203,7 @@ export default function FavoritesPage({
         isEmpty={!isBookmarksLoading && bookmarks.length === 0}
       >
         {isBookmarksLoading ? (
-          <li className="py-4 text-center text-[12px] text-[#666666]">
+          <li className="ui-empty">
             Loading bookmarks...
           </li>
         ) : (

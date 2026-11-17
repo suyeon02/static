@@ -113,11 +113,11 @@ export default function Header({
   };
 
   return (
-    <header className="relative h-20 shrink-0 bg-[#F5F5F5] border-b border-[#CCCCCC] px-4 md:px-8 flex items-center justify-between gap-4">
+    <header className="relative h-20 shrink-0 bg-canvas border-b border-line px-4 md:px-8 flex items-center justify-between gap-4">
       <div className="flex items-center gap-3 flex-1 max-w-md">
         <button
           onClick={onOpenSidebar}
-          className="md:hidden w-10 h-10 bg-white border border-black/30 rounded-[4px] flex items-center justify-center shrink-0 cursor-pointer"
+          className="md:hidden ui-btn ui-btn-secondary size-10 px-0"
           aria-label="Open menu"
         >
           <Menu size={18} />
@@ -126,7 +126,7 @@ export default function Header({
         <div ref={searchContainerRef} className="relative w-full">
           <label className="relative w-full block">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 flex pointer-events-none">
-            <Search size={16} strokeWidth={2} color="#111111" />
+            <Search size={16} strokeWidth={2} className="text-muted" />
           </span>
           <input
             ref={searchInputRef}
@@ -150,7 +150,7 @@ export default function Header({
                 ? `global-search-result-${activeResultIndex}`
                 : undefined
             }
-            className="w-full py-2 pr-4 pl-9 bg-white border border-black/30 rounded-[4px] text-[14px] font-medium text-black placeholder:text-[#666666] outline-none focus:border-black"
+            className="ui-input h-10 bg-surface pl-9 pr-4 text-body"
           />
           </label>
           {isSearchOpen && searchQuery.trim() && (
@@ -158,19 +158,19 @@ export default function Header({
               id="global-search-results"
               role="listbox"
               aria-label="Unified search results"
-              className="absolute left-0 right-0 top-full z-30 mt-2 max-h-[min(70vh,32rem)] overflow-y-auto rounded-[6px] border border-black/20 bg-white p-2 shadow-lg"
+              className="absolute left-0 right-0 top-full z-30 mt-2 max-h-[min(70vh,32rem)] overflow-y-auto rounded-md border border-line bg-surface p-2 shadow-lg"
             >
               {isSearchLoading ? (
-                <p className="flex items-center gap-2 px-3 py-4 text-[12px] text-[#666666]">
+                <p className="flex items-center gap-2 px-3 py-4 text-small text-muted">
                   <LoaderCircle size={14} className="animate-spin" />
                   Searching...
                 </p>
               ) : searchError ? (
-                <p role="alert" className="px-3 py-4 text-[12px] text-red-700">
+                <p role="alert" className="px-3 py-4 text-small text-red-700">
                   검색하지 못했습니다: {searchError}
                 </p>
               ) : flattenedResults.length === 0 ? (
-                <p className="px-3 py-4 text-[12px] text-[#666666]">
+                <p className="px-3 py-4 text-small text-muted">
                   No results found.
                 </p>
               ) : (
@@ -185,7 +185,7 @@ export default function Header({
                       role="group"
                       aria-label={group.label}
                     >
-                      <h2 className="px-3 pb-1 pt-2 text-[10px] font-bold tracking-[0.08em] text-[#777777]">
+                      <h2 className="px-3 pb-1 pt-2 text-meta font-bold tracking-[0.08em] text-muted">
                         {group.label}
                       </h2>
                       {results.map((result) => {
@@ -205,19 +205,19 @@ export default function Header({
                               setActiveResultIndex(resultIndex)
                             }
                             onClick={() => selectResult(result)}
-                            className={`flex w-full items-center gap-3 rounded-[4px] px-3 py-2 text-left ${
+                            className={`flex w-full items-center gap-3 rounded px-3 py-2 text-left ${
                               activeResultIndex === resultIndex
-                                ? 'bg-[#F0F0F0]'
-                                : 'hover:bg-[#F5F5F5]'
+                                ? 'bg-subtle'
+                                : 'hover:bg-canvas'
                             }`}
                           >
-                            <Icon size={14} className="shrink-0 text-[#666666]" />
+                            <Icon size={14} className="shrink-0 text-muted" />
                             <span className="min-w-0 flex-1">
-                              <span className="block truncate text-[12px] font-semibold text-black">
+                              <span className="block truncate text-small font-semibold text-ink">
                                 {result.title}
                               </span>
                               {result.detail && (
-                                <span className="mt-0.5 block truncate text-[10px] text-[#777777]">
+                                <span className="mt-0.5 block truncate text-meta text-muted">
                                   {result.detail}
                                 </span>
                               )}
@@ -234,14 +234,17 @@ export default function Header({
         </div>
       </div>
 
-      <div className="flex items-center gap-3 shrink-0">
+      <div className="flex items-center gap-2 shrink-0">
         <button
           onClick={handleSignOut}
           disabled={isSigningOut}
-          className="h-10 px-3 bg-white border border-black/30 rounded-[4px] flex items-center justify-center gap-2 text-[11px] font-bold hover:border-black disabled:opacity-50 cursor-pointer"
+          aria-label="Sign out"
+          className="ui-btn ui-btn-secondary h-10 px-2.5 sm:px-3"
         >
           <LogOut size={16} strokeWidth={2} />
-          {isSigningOut ? 'SIGNING OUT...' : 'SIGN OUT'}
+          <span className="hidden sm:inline">
+            {isSigningOut ? 'SIGNING OUT...' : 'SIGN OUT'}
+          </span>
         </button>
         <div className="relative">
           <button
@@ -253,11 +256,11 @@ export default function Header({
               isPushPanelOpen ? 'push-reminder-settings-panel' : undefined
             }
             onClick={() => setIsPushPanelOpen((open) => !open)}
-            className="w-10 h-10 bg-white border border-black/30 rounded-[4px] flex items-center justify-center relative hover:border-black cursor-pointer"
+            className="ui-btn ui-btn-secondary relative size-10 px-0"
           >
             <Bell size={16} strokeWidth={2} />
             {push.enabled && (
-              <span className="absolute top-2 right-2 w-2 h-2 bg-black rounded-full" />
+              <span className="absolute top-2 right-2 size-2 rounded-full bg-ink" aria-hidden="true" />
             )}
           </button>
           {isPushPanelOpen && (
@@ -271,7 +274,7 @@ export default function Header({
         </div>
         <button
           aria-label="Settings"
-          className="w-10 h-10 bg-white border border-black/30 rounded-[4px] flex items-center justify-center hover:border-black cursor-pointer"
+          className="ui-btn ui-btn-secondary size-10 px-0"
         >
           <Settings size={16} strokeWidth={2} />
         </button>
@@ -279,7 +282,7 @@ export default function Header({
       {signOutError && (
         <p
           role="alert"
-          className="absolute top-full right-4 md:right-8 z-10 mt-2 max-w-[calc(100vw-2rem)] rounded border border-red-300 bg-red-50 px-3 py-2 text-[12px] text-red-800"
+          className="absolute top-full right-4 md:right-8 z-10 mt-2 max-w-[calc(100vw-2rem)] rounded border border-red-300 bg-red-50 px-3 py-2 text-small text-red-800"
         >
           로그아웃하지 못했습니다: {signOutError}
         </p>

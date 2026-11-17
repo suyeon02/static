@@ -29,10 +29,10 @@ export default function CalendarWidget({ selectedDate, onSelectDate }) {
     <WidgetCard
       title="CALENDAR"
       rightSlot={
-        <div className="flex items-center gap-2 text-[11px] font-bold">
+        <div className="flex items-center gap-1 text-small font-bold tabular-nums">
           <button
             onClick={prevMonth}
-            className="p-1 hover:bg-black/5 rounded cursor-pointer"
+            className="ui-icon-btn size-7"
             aria-label="Previous month"
           >
             <ChevronLeft size={14} />
@@ -42,7 +42,7 @@ export default function CalendarWidget({ selectedDate, onSelectDate }) {
           </span>
           <button
             onClick={nextMonth}
-            className="p-1 hover:bg-black/5 rounded cursor-pointer"
+            className="ui-icon-btn size-7"
             aria-label="Next month"
           >
             <ChevronRight size={14} />
@@ -50,13 +50,13 @@ export default function CalendarWidget({ selectedDate, onSelectDate }) {
         </div>
       }
     >
-      <div className="grid grid-cols-7 text-center text-[10px] font-bold text-[#666666] mb-2">
+      <div className="grid grid-cols-7 gap-1 text-center text-meta font-bold text-muted mb-2">
         {DAYS.map((day) => (
           <div key={day}>{day}</div>
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-1 text-center text-[12px] flex-1 items-center">
+      <div className="grid grid-cols-7 gap-1 text-center text-small tabular-nums flex-1 content-start">
         {Array.from({ length: firstDay }).map((_, i) => (
           <div key={`empty-${i}`} />
         ))}
@@ -70,12 +70,14 @@ export default function CalendarWidget({ selectedDate, onSelectDate }) {
             <button
               key={day}
               onClick={() => onSelectDate(dateStr)}
-              className={`h-7 rounded-[4px] flex items-center justify-center transition-colors cursor-pointer ${
+              aria-pressed={selected}
+              aria-current={currentToday ? 'date' : undefined}
+              className={`h-8 rounded flex items-center justify-center transition-colors cursor-pointer ${
                 selected
-                  ? 'bg-black text-white font-bold'
+                  ? 'bg-ink text-white font-bold'
                   : currentToday
-                  ? 'border border-black font-bold text-black'
-                  : 'hover:bg-[#F0F0F0] text-black'
+                  ? 'border border-ink font-bold text-ink'
+                  : 'hover:bg-hover text-ink'
               }`}
             >
               {day}
