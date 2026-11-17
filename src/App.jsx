@@ -94,7 +94,6 @@ export default function App() {
     createTask,
     toggleTask,
     deleteTask,
-    updateTaskDueDate,
     retry: retryTasks,
   } = useTasks(user?.id)
   const filteredTodos = searchQuery
@@ -285,7 +284,6 @@ export default function App() {
                 onCreateTodo={createTask}
                 onToggleTodo={toggleTask}
                 onDeleteTodo={deleteTask}
-                onUpdateTodoDueDate={updateTaskDueDate}
               />
               <AiToolsWidget />
               <RecentWidget
@@ -379,7 +377,6 @@ export default function App() {
                 onCreateTodo={createTask}
                 onToggleTodo={toggleTask}
                 onDeleteTodo={deleteTask}
-                onUpdateTodoDueDate={updateTaskDueDate}
               />
             </div>
           )}

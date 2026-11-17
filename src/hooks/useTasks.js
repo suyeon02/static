@@ -5,14 +5,13 @@ import { getLocalizedErrorMessage } from '../lib/userFacingError';
 const TASKS_KEY = 'static_todos';
 const MIGRATION_USER_KEY = 'static_todos_migration_user_id';
 const MIGRATION_DONE_KEY = 'static_todos_migration_done_user_id';
-const TASK_FIELDS = 'id, title, done, due_date, created_at';
+const TASK_FIELDS = 'id, title, done, created_at';
 
 function mapTask(row) {
   return {
     id: row.id,
     text: row.title,
     done: row.done,
-    dueDate: row.due_date,
   };
 }
 
@@ -140,12 +139,12 @@ export default function useTasks(userId) {
   }, [userId, reloadVersion]);
 
   const createTask = useCallback(
-    async (text, dueDate) => {
+    async (text) => {
       if (!userId || !isReady) return false;
       try {
         const { data, error: createError } = await supabase
           .from('tasks')
-          .insert({ title: text, done: false, due_date: dueDate || null })
+          .insert({ title: text, done: false })
           .select(TASK_FIELDS)
           .single();
         if (createError) throw createError;
@@ -165,39 +164,6 @@ export default function useTasks(userId) {
         setErrorState({
           userId,
           message: `할 일을 만들지 못했습니다: ${getLocalizedErrorMessage(createError, '다시 시도해 주세요.')}`,
-        });
-        return false;
-      }
-    },
-    [isReady, userId],
-  );
-
-  const updateTaskDueDate = useCallback(
-    async (taskId, dueDate) => {
-      if (!userId || !isReady) return false;
-      try {
-        const { data, error: updateError } = await supabase
-          .from('tasks')
-          .update({ due_date: dueDate || null })
-          .eq('id', taskId)
-          .select(TASK_FIELDS)
-          .single();
-        if (updateError) throw updateError;
-
-        if (currentUserId.current === userId) {
-          setTasksState((current) => ({
-            ...current,
-            tasks: current.tasks.map((task) =>
-              task.id === taskId ? mapTask(data) : task,
-            ),
-          }));
-          setErrorState({ userId, message: '' });
-        }
-        return true;
-      } catch (updateError) {
-        setErrorState({
-          userId,
-          message: `할 일 마감일을 수정하지 못했습니다: ${getLocalizedErrorMessage(updateError, '다시 시도해 주세요.')}`,
         });
         return false;
       }
@@ -275,7 +241,6 @@ export default function useTasks(userId) {
     createTask,
     toggleTask,
     deleteTask,
-    updateTaskDueDate,
     retry,
   };
 }
