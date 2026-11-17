@@ -15,6 +15,7 @@ export default function MemoWidget({
     setIsSaving(true);
     try {
       await onSaveMemo(memoText);
+      setMemoText('');
       setSavedNotice(true);
       setTimeout(() => setSavedNotice(false), 1800);
     } catch {
