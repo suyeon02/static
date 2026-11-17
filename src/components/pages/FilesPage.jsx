@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Download, FileUp, LoaderCircle, Trash2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getLocalizedErrorMessage } from '../../lib/userFacingError';
+import CardHeader from '../common/CardHeader';
+import ErrorAlert from '../common/ErrorAlert';
 
 const BUCKET = 'my-desk-files';
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -229,13 +231,10 @@ export default function FilesPage({ userId }) {
     <div className="max-w-3xl space-y-6">
       <form
         onSubmit={handleUpload}
-        className="space-y-4 rounded-[8px] border border-[#CCCCCC] bg-white p-5"
+        className="ui-card space-y-4"
       >
-        <div className="flex items-center gap-2 border-b border-[#E6E6E6] pb-3">
-          <FileUp size={17} />
-          <h2 className="text-[14px] font-bold">// UPLOAD FILE</h2>
-        </div>
-        <label className="block space-y-1.5 text-[11px] font-bold">
+        <CardHeader title="UPLOAD FILE" icon={FileUp} />
+        <label className="block space-y-1.5 text-small font-bold">
           파일 (최대 10MB)
           <input
             ref={fileInputRef}
@@ -244,11 +243,11 @@ export default function FilesPage({ userId }) {
               setSelectedFile(event.target.files?.[0] || null);
               clearError();
             }}
-            className="w-full cursor-pointer rounded-[4px] border border-black/15 bg-[#F0F0F0] px-3 py-2 text-[12px] font-normal file:mr-3 file:cursor-pointer file:border-0 file:bg-black file:px-3 file:py-1 file:text-[11px] file:font-bold file:text-white"
+            className="w-full cursor-pointer rounded border border-line bg-subtle px-2 py-1.5 text-small font-normal file:mr-3 file:h-7 file:cursor-pointer file:rounded file:border-0 file:bg-ink file:px-3 file:text-meta file:font-bold file:text-white disabled:cursor-not-allowed disabled:opacity-40"
           />
         </label>
         {selectedFile && (
-          <p className="text-[11px] text-[#666666]">
+          <p className="text-meta text-muted">
             {selectedFile.name} · {formatFileSize(selectedFile.size)}
           </p>
         )}
@@ -256,7 +255,7 @@ export default function FilesPage({ userId }) {
           <button
             type="submit"
             disabled={!selectedFile || isUploading || isLoading}
-            className="flex cursor-pointer items-center gap-1.5 rounded-[4px] bg-black px-3 py-2 text-[11px] font-bold text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-40"
+            className="ui-btn ui-btn-primary"
           >
             {isUploading ? (
               <LoaderCircle size={13} className="animate-spin" />
@@ -268,46 +267,28 @@ export default function FilesPage({ userId }) {
         </div>
       </form>
 
-      {error && (
-        <div
-          role="alert"
-          className="rounded border border-red-300 bg-red-50 p-3 text-[12px] text-red-800"
-        >
-          <p>{error}</p>
-          {retryAction && (
-            <button
-              type="button"
-              onClick={handleRetry}
-              className="mt-2 cursor-pointer font-bold underline"
-            >
-              다시 시도
-            </button>
-          )}
-        </div>
-      )}
+      <ErrorAlert message={error} onRetry={retryAction ? handleRetry : undefined} />
 
-      <section className="rounded-[8px] border border-[#CCCCCC] bg-white p-5">
-        <div className="mb-3 flex items-center justify-between border-b border-[#E6E6E6] pb-3">
-          <h2 className="text-[14px] font-bold">// FILES ({files.length})</h2>
-        </div>
+      <section className="ui-card">
+        <CardHeader title={`FILES (${files.length})`} />
         {isLoading ? (
-          <p className="py-8 text-center text-[12px] text-[#666666]">
+          <p className="ui-empty">
             Loading files...
           </p>
         ) : files.length === 0 ? (
-          <p className="py-8 text-center text-[12px] text-[#666666]">
+          <p className="ui-empty">
             No files yet.
           </p>
         ) : (
-          <ul className="divide-y divide-[#E6E6E6]">
+          <ul className="divide-y divide-line-soft">
             {files.map((file) => (
               <li
                 key={file.path}
                 className="flex items-center justify-between gap-4 py-3"
               >
                 <div className="min-w-0">
-                  <p className="truncate text-[12px] font-bold">{file.name}</p>
-                  <p className="mt-1 text-[10px] text-[#666666]">
+                  <p className="truncate text-small font-bold">{file.name}</p>
+                  <p className="mt-1 text-meta text-muted">
                     {formatFileSize(file.size)}
                     {file.createdAt &&
                       ` · ${new Date(file.createdAt).toLocaleString()}`}
@@ -320,7 +301,7 @@ export default function FilesPage({ userId }) {
                     disabled={downloadingPath !== null || deletingPath !== null}
                     aria-label={`Download ${file.name}`}
                     title="Download file"
-                    className="cursor-pointer p-2 text-[#666666] hover:text-black disabled:opacity-40"
+                    className="ui-icon-btn"
                   >
                     {downloadingPath === file.path ? (
                       <LoaderCircle size={14} className="animate-spin" />
@@ -334,7 +315,7 @@ export default function FilesPage({ userId }) {
                     disabled={deletingPath !== null || downloadingPath !== null}
                     aria-label={`Delete ${file.name}`}
                     title="Delete file"
-                    className="cursor-pointer p-2 text-[#666666] hover:text-black disabled:opacity-40"
+                    className="ui-icon-btn"
                   >
                     {deletingPath === file.path ? (
                       <LoaderCircle size={14} className="animate-spin" />

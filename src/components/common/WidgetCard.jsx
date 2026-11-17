@@ -1,16 +1,16 @@
 import React from 'react';
 
-export default function WidgetCard({ title, rightSlot, children }) {
+export default function WidgetCard({ title, rightSlot, children, className = '' }) {
   return (
-    <section className="bg-white border border-[#CCCCCC] rounded-[8px] p-5 flex flex-col min-h-[260px] overflow-hidden">
-      <div className="flex justify-between items-center border-b border-[#E6E6E6] pb-3 mb-4 shrink-0">
-        <div className="flex items-center text-[15px] font-bold">
-          <span className="w-2 h-2 bg-black rounded-full mr-2 inline-block" />
-          <span>{title}</span>
-        </div>
-        {rightSlot && <div>{rightSlot}</div>}
+    <section className={`ui-card flex min-h-[260px] flex-col overflow-hidden ${className}`}>
+      <div className="ui-card-header">
+        <h2 className="ui-card-title">
+          <span className="size-2 shrink-0 rounded-full bg-ink" aria-hidden="true" />
+          <span className="truncate">{title}</span>
+        </h2>
+        {rightSlot && <div className="shrink-0">{rightSlot}</div>}
       </div>
-      <div className="flex-1 min-h-0 flex flex-col">{children}</div>
+      <div className="flex min-h-0 flex-1 flex-col">{children}</div>
     </section>
   );
 }

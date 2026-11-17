@@ -29,7 +29,7 @@ export default function MemoWidget({
       title="MEMO"
       rightSlot={
         savedNotice && (
-          <span className="text-[10px] font-bold text-black">SAVED ✓</span>
+          <span role="status" className="text-meta font-bold text-green-800">SAVED ✓</span>
         )
       }
     >
@@ -38,14 +38,15 @@ export default function MemoWidget({
         onChange={(e) => setMemoText(e.target.value)}
         placeholder="> Type your thoughts here..."
         disabled={isLoading}
-        className="flex-1 w-full p-3 bg-[#F0F0F0] border border-black/10 rounded-[4px] text-[13px] leading-relaxed resize-none outline-none focus:border-black min-h-[120px]"
+        aria-label="Memo"
+        className="ui-input h-auto min-h-[120px] flex-1 resize-none py-3 text-body"
       />
       <div className="mt-3 flex justify-between items-center shrink-0">
-        <span className="text-[11px] text-[#666666]">#quick_memo</span>
+        <span className="text-meta text-muted">#quick_memo</span>
         <button
           onClick={handleSave}
           disabled={isLoading || isSaving}
-          className="px-4 py-1.5 bg-black text-white text-[12px] font-bold rounded-[4px] cursor-pointer hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
+          className="ui-btn ui-btn-primary px-4"
         >
           {isSaving ? 'SAVING…' : 'SAVE'}
         </button>

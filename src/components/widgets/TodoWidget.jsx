@@ -37,63 +37,66 @@ export default function TodoWidget({
     <WidgetCard
       title="TODO"
       rightSlot={
-        <span className="text-[10px] bg-[#F0F0F0] border border-black/20 px-2 py-0.5 rounded-[4px] font-bold">
+        <span className="rounded border border-line bg-subtle px-2 py-0.5 text-meta font-bold tabular-nums">
           {completedCount}/{todos.length}
         </span>
       }
     >
-      <div className="flex-1 overflow-y-auto space-y-2 pr-1 mb-3">
+      <div className="flex-1 overflow-y-auto space-y-0.5 pr-1 mb-3">
         {isLoading ? (
-          <div className="text-[12px] text-[#666666] py-4 text-center">
-            Loading tasks...
-          </div>
+          <div className="ui-empty">Loading tasks...</div>
         ) : todos.length === 0 ? (
-          <div className="text-[12px] text-[#666666] py-4 text-center">
-            All tasks cleared.
-          </div>
+          <div className="ui-empty">All tasks cleared.</div>
         ) : (
           todos.map((todo) => (
             <div
               key={todo.id}
-              className="flex items-center gap-2 text-[12px] py-1 px-1 hover:bg-[#F5F5F5] rounded-[4px] group"
+              className="group flex items-start gap-2.5 rounded px-2 py-1.5 hover:bg-canvas"
             >
               <button
+                type="button"
                 onClick={() => toggleTodo(todo)}
                 disabled={!isReady}
-                className="flex items-center gap-2.5 text-left flex-1 min-w-0 cursor-pointer"
+                role="checkbox"
+                aria-checked={todo.done}
+                aria-label={todo.text}
+                className={`mt-0.5 flex size-4 shrink-0 cursor-pointer items-center justify-center rounded border ${
+                  todo.done
+                    ? 'border-ink bg-ink text-white'
+                    : 'border-line bg-surface hover:border-ink'
+                }`}
               >
-                <span
-                  className={`w-4 h-4 rounded-[3px] border flex items-center justify-center shrink-0 ${
-                    todo.done
-                      ? 'bg-black border-black text-white'
-                      : 'border-black/40 bg-white'
-                  }`}
-                >
-                  {todo.done && <Check size={11} strokeWidth={3} />}
-                </span>
-                <span
-                  className={`truncate ${
-                    todo.done ? 'line-through text-[#666666]' : 'text-black'
+                {todo.done && <Check size={11} strokeWidth={3} />}
+              </button>
+              <div className="min-w-0 flex-1">
+                <button
+                  type="button"
+                  onClick={() => toggleTodo(todo)}
+                  disabled={!isReady}
+                  tabIndex={-1}
+                  className={`block w-full cursor-pointer truncate text-left text-small ${
+                    todo.done ? 'text-muted line-through' : 'text-ink'
                   }`}
                 >
                   {todo.text}
-                </span>
-              </button>
-              <input
-                type="date"
-                value={todo.dueDate || ''}
-                onChange={(event) =>
-                  void onUpdateTodoDueDate(todo.id, event.target.value)
-                }
-                disabled={!isReady}
-                aria-label={`Due date for ${todo.text}`}
-                className="w-[7.5rem] shrink-0 bg-transparent text-[10px] text-[#666666] outline-none focus:text-black"
-              />
+                </button>
+                <input
+                  type="date"
+                  value={todo.dueDate || ''}
+                  onChange={(event) =>
+                    void onUpdateTodoDueDate(todo.id, event.target.value)
+                  }
+                  disabled={!isReady}
+                  aria-label={`Due date for ${todo.text}`}
+                  className="mt-0.5 h-5 w-[8rem] rounded bg-transparent text-meta text-muted tabular-nums outline-none hover:text-ink focus:text-ink"
+                />
+              </div>
               <button
+                type="button"
                 onClick={() => deleteTodo(todo.id)}
                 disabled={!isReady}
                 aria-label={`Delete ${todo.text}`}
-                className="shrink-0 opacity-0 group-hover:opacity-100 text-[#666666] hover:text-black cursor-pointer"
+                className="ui-icon-btn ui-reveal size-7"
               >
                 <Trash2 size={13} />
               </button>
@@ -102,14 +105,15 @@ export default function TodoWidget({
         )}
       </div>
 
-      <form onSubmit={addTodo} className="flex gap-1.5 shrink-0">
+      <form onSubmit={addTodo} className="flex gap-2 shrink-0">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={!isReady}
           placeholder="+ New task..."
-          className="flex-1 min-w-0 px-2.5 py-1.5 bg-[#F0F0F0] border border-black/15 rounded-[4px] text-[12px] outline-none focus:border-black"
+          aria-label="New task"
+          className="ui-input flex-1"
         />
         <input
           type="date"
@@ -117,12 +121,13 @@ export default function TodoWidget({
           onChange={(event) => setDueDate(event.target.value)}
           disabled={!isReady}
           aria-label="Task due date"
-          className="w-[7.5rem] px-1 bg-[#F0F0F0] border border-black/15 rounded-[4px] text-[10px] outline-none focus:border-black"
+          className="ui-input w-[8.5rem] px-2 text-meta tabular-nums"
         />
         <button
           type="submit"
           disabled={!isReady}
-          className="px-2.5 bg-black text-white rounded-[4px] flex items-center justify-center cursor-pointer hover:bg-neutral-800"
+          aria-label="Add task"
+          className="ui-btn ui-btn-primary size-9 px-0"
         >
           <Plus size={14} />
         </button>

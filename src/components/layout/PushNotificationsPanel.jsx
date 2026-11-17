@@ -12,14 +12,14 @@ export default function PushNotificationsPanel({
         if (event.key === 'Escape') onClose();
       }}
       aria-label="Push reminder settings"
-      className="absolute right-0 top-full z-40 mt-2 w-[min(22rem,calc(100vw-2rem))] rounded-[6px] border border-black/20 bg-white p-4 text-left shadow-lg"
+      className="absolute right-0 top-full z-40 mt-2 w-[min(22rem,calc(100vw-2rem))] rounded-md border border-line bg-surface p-4 text-left shadow-lg"
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 id="push-reminder-settings-title" className="text-[13px] font-bold">
+          <h2 id="push-reminder-settings-title" className="text-title font-bold">
             PUSH REMINDERS
           </h2>
-          <p className="mt-2 text-[11px] leading-relaxed text-[#555555]">
+          <p className="mt-2 text-meta leading-relaxed text-muted">
             Tasks: 9:00 AM on the due date. Calendar events: 10 minutes before
             they start. Times use this device&apos;s time zone.
           </p>
@@ -28,13 +28,13 @@ export default function PushNotificationsPanel({
           type="button"
           onClick={onClose}
           aria-label="Close push reminder settings"
-          className="text-[18px] leading-none text-[#666666] hover:text-black"
+          className="ui-icon-btn -mr-2 -mt-1 text-[18px] leading-none"
         >
           ×
         </button>
       </div>
 
-      <p className="mt-3 text-[10px] leading-relaxed text-[#666666]">
+      <p className="mt-3 rounded bg-canvas p-3 text-meta leading-relaxed text-muted">
         데스크톱 및 Android 브라우저에서 Web Push를 사용할 수 있습니다.
         iPhone 또는 iPad에서는 STATIC을 홈 화면에 추가한 뒤 앱으로 열어야
         합니다(iOS/iPadOS 16.4 이상). 일반 브라우저 탭에서는 푸시 알림을 받을
@@ -43,18 +43,18 @@ export default function PushNotificationsPanel({
       </p>
 
       {push.permission === 'denied' && (
-        <p className="mt-3 rounded border border-amber-300 bg-amber-50 p-2 text-[11px] text-amber-900">
+        <p className="mt-3 rounded border border-amber-300 bg-amber-50 p-2 text-meta text-amber-900">
           이 사이트의 알림이 차단되어 있습니다. 알림을 켜려면 먼저 브라우저
           설정에서 이 사이트의 알림을 허용해 주세요.
         </p>
       )}
       {push.error && (
-        <p role="alert" className="mt-3 text-[11px] text-red-700">
+        <p role="alert" className="mt-3 text-meta text-red-700">
           {push.error}
         </p>
       )}
       {push.status && (
-        <p role="status" aria-live="polite" className="mt-3 text-[11px] text-[#444444]">
+        <p role="status" aria-live="polite" className="mt-3 text-meta text-muted">
           {push.status}
         </p>
       )}
@@ -63,7 +63,7 @@ export default function PushNotificationsPanel({
         type="button"
         onClick={push.enabled ? push.disable : push.enable}
         disabled={!push.supported || push.loading}
-        className="mt-4 w-full rounded-[4px] bg-black px-3 py-2 text-[11px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
+        className="ui-btn ui-btn-primary mt-4 w-full"
       >
         {push.loading
           ? 'WORKING...'

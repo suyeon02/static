@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { BookmarkPlus, ExternalLink, Plus, Star, Trash2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getLocalizedErrorMessage } from '../../lib/userFacingError';
+import CardHeader from '../common/CardHeader';
+import ErrorAlert from '../common/ErrorAlert';
 
 const BOOKMARK_COLUMNS = 'id, title, url, created_at, is_favorite';
 
@@ -192,14 +194,11 @@ export default function BookmarksPage({ userId }) {
     <div className="max-w-3xl space-y-6">
       <form
         onSubmit={handleAdd}
-        className="bg-white border border-[#CCCCCC] rounded-[8px] p-5 space-y-4"
+        className="ui-card space-y-4"
       >
-        <div className="flex items-center gap-2 border-b border-[#E6E6E6] pb-3">
-          <BookmarkPlus size={17} />
-          <h2 className="text-[14px] font-bold">// ADD BOOKMARK</h2>
-        </div>
+        <CardHeader title="ADD BOOKMARK" icon={BookmarkPlus} />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <label className="space-y-1.5 text-[11px] font-bold">
+          <label className="space-y-1.5 text-small font-bold">
             TITLE
             <input
               type="text"
@@ -207,10 +206,10 @@ export default function BookmarksPage({ userId }) {
               onChange={(event) => setTitle(event.target.value)}
               placeholder="Bookmark title"
               required
-              className="w-full px-3 py-2 bg-[#F0F0F0] border border-black/15 rounded-[4px] text-[12px] font-normal outline-none focus:border-black"
+              className="ui-input font-normal"
             />
           </label>
-          <label className="space-y-1.5 text-[11px] font-bold">
+          <label className="space-y-1.5 text-small font-bold">
             URL
             <input
               type="text"
@@ -219,7 +218,7 @@ export default function BookmarksPage({ userId }) {
               onChange={(event) => setUrl(event.target.value)}
               placeholder="https://example.com"
               required
-              className="w-full px-3 py-2 bg-[#F0F0F0] border border-black/15 rounded-[4px] text-[12px] font-normal outline-none focus:border-black"
+              className="ui-input font-normal"
             />
           </label>
         </div>
@@ -227,47 +226,27 @@ export default function BookmarksPage({ userId }) {
           <button
             type="submit"
             disabled={isAdding || isLoading}
-            className="px-3 py-2 bg-black text-white text-[11px] font-bold rounded-[4px] flex items-center gap-1.5 cursor-pointer hover:bg-neutral-800 disabled:opacity-40"
+            className="ui-btn ui-btn-primary"
           >
             <Plus size={13} /> ADD BOOKMARK
           </button>
         </div>
       </form>
 
-      {error && (
-        <div
-          role="alert"
-          className="rounded border border-red-300 bg-red-50 p-3 text-[12px] text-red-800"
-        >
-          <p>{error}</p>
-          {retryAction && (
-            <button
-              type="button"
-              onClick={handleRetry}
-              className="mt-2 font-bold underline cursor-pointer"
-            >
-              다시 시도
-            </button>
-          )}
-        </div>
-      )}
+      <ErrorAlert message={error} onRetry={retryAction ? handleRetry : undefined} />
 
-      <section className="bg-white border border-[#CCCCCC] rounded-[8px] p-5">
-        <div className="flex items-center justify-between border-b border-[#E6E6E6] pb-3 mb-3">
-          <h2 className="text-[14px] font-bold">
-            // BOOKMARKS ({bookmarks.length})
-          </h2>
-        </div>
+      <section className="ui-card">
+        <CardHeader title={`BOOKMARKS (${bookmarks.length})`} />
         {isLoading ? (
-          <p className="py-8 text-center text-[12px] text-[#666666]">
+          <p className="ui-empty">
             Loading bookmarks...
           </p>
         ) : bookmarks.length === 0 ? (
-          <p className="py-8 text-center text-[12px] text-[#666666]">
+          <p className="ui-empty">
             No bookmarks yet.
           </p>
         ) : (
-          <ul className="divide-y divide-[#E6E6E6]">
+          <ul className="divide-y divide-line-soft">
             {bookmarks.map((bookmark) => (
               <li
                 key={bookmark.id}
@@ -278,12 +257,12 @@ export default function BookmarksPage({ userId }) {
                     href={bookmark.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 truncate text-[12px] font-bold hover:underline"
+                    className="flex items-center gap-2 truncate text-small font-bold hover:underline"
                   >
                     <span className="truncate">{bookmark.title}</span>
                     <ExternalLink size={12} className="shrink-0" />
                   </a>
-                  <p className="mt-1 truncate text-[10px] text-[#666666]">
+                  <p className="mt-1 truncate text-meta text-muted">
                     {bookmark.url}
                   </p>
                 </div>
@@ -294,8 +273,8 @@ export default function BookmarksPage({ userId }) {
                     aria-label={`${bookmark.is_favorite ? 'Remove' : 'Add'} ${bookmark.title} ${bookmark.is_favorite ? 'from' : 'to'} favorites`}
                     aria-pressed={bookmark.is_favorite}
                     title={bookmark.is_favorite ? 'Remove from favorites' : 'Add to favorites'}
-                    className={`p-2 cursor-pointer ${
-                      bookmark.is_favorite ? 'text-amber-500' : 'text-[#666666] hover:text-black'
+                    className={`ui-icon-btn ${
+                      bookmark.is_favorite ? 'text-amber-500 hover:text-amber-600' : ''
                     }`}
                   >
                     <Star size={14} fill={bookmark.is_favorite ? 'currentColor' : 'none'} />
@@ -306,7 +285,7 @@ export default function BookmarksPage({ userId }) {
                     disabled={deletingId !== null}
                     aria-label={`Delete ${bookmark.title}`}
                     title="Delete bookmark"
-                    className="p-2 text-[#666666] hover:text-black cursor-pointer disabled:opacity-40"
+                    className="ui-icon-btn"
                   >
                     <Trash2 size={14} />
                   </button>
