@@ -52,6 +52,14 @@ body {
   outline-offset: 2px;
 }
 
+@utility scrollbar-none {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @layer components {
   .ui-card {
     @apply rounded-lg border border-line bg-surface p-5;
