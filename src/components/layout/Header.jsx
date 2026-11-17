@@ -42,6 +42,8 @@ export default function Header({
   const [signOutError, setSignOutError] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isPushPanelOpen, setIsPushPanelOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const settingsRef = useRef(null);
   const [activeResultIndex, setActiveResultIndex] = useState(-1);
   const searchContainerRef = useRef(null);
   const searchInputRef = useRef(null);
@@ -62,6 +64,22 @@ export default function Header({
     document.addEventListener('pointerdown', handlePointerDown);
     return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, []);
+
+  useEffect(() => {
+    if (!isSettingsOpen) return undefined;
+    const handlePointerDown = (event) => {
+      if (!settingsRef.current?.contains(event.target)) setIsSettingsOpen(false);
+    };
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setIsSettingsOpen(false);
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isSettingsOpen]);
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
@@ -235,17 +253,6 @@ export default function Header({
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
-        <button
-          onClick={handleSignOut}
-          disabled={isSigningOut}
-          aria-label="Sign out"
-          className="ui-btn ui-btn-secondary h-10 px-2.5 sm:px-3"
-        >
-          <LogOut size={16} strokeWidth={2} />
-          <span className="hidden sm:inline">
-            {isSigningOut ? 'SIGNING OUT...' : 'SIGN OUT'}
-          </span>
-        </button>
         <div className="relative">
           <button
             type="button"
@@ -272,12 +279,44 @@ export default function Header({
             </div>
           )}
         </div>
-        <button
-          aria-label="Settings"
-          className="ui-btn ui-btn-secondary size-10 px-0"
-        >
-          <Settings size={16} strokeWidth={2} />
-        </button>
+        <div ref={settingsRef} className="relative">
+          <button
+            type="button"
+            aria-label="Settings"
+            aria-haspopup="menu"
+            aria-expanded={isSettingsOpen}
+            onClick={() => setIsSettingsOpen((open) => !open)}
+            className="ui-btn ui-btn-secondary size-10 px-0"
+          >
+            <Settings size={16} strokeWidth={2} />
+          </button>
+          {isSettingsOpen && (
+            <div
+              role="menu"
+              aria-label="Settings"
+              className="absolute top-full right-0 z-20 mt-2 w-56 overflow-hidden rounded-lg border border-line bg-surface py-1 shadow-lg"
+            >
+              {user?.email && (
+                <p className="truncate border-b border-line-soft px-3 py-2 text-meta text-muted">
+                  {user.email}
+                </p>
+              )}
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setIsSettingsOpen(false);
+                  void handleSignOut();
+                }}
+                disabled={isSigningOut}
+                className="flex h-9 w-full cursor-pointer items-center gap-2 px-3 text-left text-small font-bold hover:bg-hover disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <LogOut size={14} strokeWidth={2} />
+                {isSigningOut ? 'SIGNING OUT...' : 'SIGN OUT'}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
       {signOutError && (
         <p

@@ -93,6 +93,7 @@ export default function useQuickMemos(userId) {
   const draftSyncFailedUserIdRef = useRef(null);
   const draftTimerRef = useRef(null);
   const draftQueueRef = useRef(Promise.resolve());
+  const pendingDraftSavesRef = useRef(0);
   const stateUserId = memoState.userId === userId ? userId : null;
   const memoText = stateUserId ? memoState.draft : '';
   const quickMemos = stateUserId ? memoState.quickMemos : [];
@@ -111,6 +112,7 @@ export default function useQuickMemos(userId) {
   const saveDraft = useCallback(
     (text, targetUserId) => {
       const previous = draftQueueRef.current;
+      pendingDraftSavesRef.current += 1;
       const next = previous.catch(() => {}).then(async () => {
         const { error: saveError } = await supabase
           .from('memo_drafts')
@@ -130,6 +132,11 @@ export default function useQuickMemos(userId) {
         }
       });
       draftQueueRef.current = next;
+      void next
+        .finally(() => {
+          pendingDraftSavesRef.current -= 1;
+        })
+        .catch(() => {});
       void next.catch((saveError) => {
         if (targetUserId === userId) {
           draftSyncFailedUserIdRef.current = targetUserId;
@@ -305,6 +312,15 @@ export default function useQuickMemos(userId) {
         },
         (payload) => {
           const nextDraft = payload.new?.content || '';
+          // Skip echoes of this device's own saves; applying them mid-typing
+          // overwrites newer keystrokes (and breaks IME composition).
+          if (
+            draftTimerRef.current ||
+            pendingDraftSavesRef.current > 0 ||
+            nextDraft === draftRef.current
+          ) {
+            return;
+          }
           draftRef.current = nextDraft;
           draftExistsRef.current = Boolean(payload.new);
           setMemoState((current) =>

@@ -11,10 +11,12 @@ export default function MemoWidget({
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
-    if (!memoText.trim()) return;
+    const submitted = memoText;
+    if (!submitted.trim()) return;
     setIsSaving(true);
     try {
-      await onSaveMemo(memoText);
+      await onSaveMemo(submitted);
+      setMemoText((current) => (current === submitted ? '' : current));
       setSavedNotice(true);
       setTimeout(() => setSavedNotice(false), 1800);
     } catch {
