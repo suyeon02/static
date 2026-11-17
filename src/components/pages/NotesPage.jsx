@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Check,
   Edit3,
@@ -12,8 +12,10 @@ import {
   X,
 } from 'lucide-react';
 import CardHeader from '../common/CardHeader';
+import SwipePanels from '../common/SwipePanels';
 import ErrorAlert from '../common/ErrorAlert';
 import normalizeTags from '../../lib/normalizeTags';
+import useSwipePanels from '../../hooks/useSwipePanels';
 
 const UNFILED = 'unfiled';
 const PANELS = ['FOLDERS', 'NOTES', 'EDITOR'];
@@ -36,34 +38,8 @@ export default function NotesPage({
   const [selectedId, setSelectedId] = useState(notes[0]?.id || null);
   const [selectedFolder, setSelectedFolder] = useState(null);
   const [selectedTag, setSelectedTag] = useState(null);
-  const [activePanel, setActivePanel] = useState(0);
-  const panelsRef = useRef(null);
-
-  const isSwipeLayout = () => {
-    const el = panelsRef.current;
-    return Boolean(el) && el.scrollWidth > el.clientWidth + 1;
-  };
-
-  const goToPanel = (index) => {
-    const el = panelsRef.current;
-    const panel = el?.children[index];
-    if (!panel || !isSwipeLayout()) return;
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    el.scrollTo({ left: panel.offsetLeft - el.offsetLeft, behavior: reduceMotion ? 'auto' : 'smooth' });
-    setActivePanel(index);
-  };
-
-  const handlePanelsScroll = () => {
-    const el = panelsRef.current;
-    if (!el) return;
-    let nearest = 0;
-    Array.from(el.children).forEach((panel, index) => {
-      const distance = Math.abs(panel.offsetLeft - el.offsetLeft - el.scrollLeft);
-      const best = Math.abs(el.children[nearest].offsetLeft - el.offsetLeft - el.scrollLeft);
-      if (distance < best) nearest = index;
-    });
-    if (nearest !== activePanel) setActivePanel(nearest);
-  };
+  const panels = useSwipePanels();
+  const { goToPanel } = panels;
 
   const selectFolder = (folderId) => {
     setSelectedFolder(folderId);
@@ -291,28 +267,14 @@ export default function NotesPage({
   };
 
   return (
-    <div className="flex h-full flex-col">
-      <nav aria-label="Notes panels" className="mb-3 grid grid-cols-3 gap-1 md:hidden">
-        {PANELS.map((label, index) => (
-          <button
-            key={label}
-            type="button"
-            onClick={() => goToPanel(index)}
-            aria-current={activePanel === index ? 'true' : undefined}
-            className={`ui-segment h-8 tracking-[0.04em] ${
-              activePanel === index ? 'ui-segment-active' : 'ui-segment-idle'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </nav>
-      <div
-        ref={panelsRef}
-        onScroll={handlePanelsScroll}
-        className="scrollbar-none flex h-[calc(100dvh-210px)] min-h-[460px] snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain md:grid md:h-full md:min-h-[540px] md:snap-none md:grid-cols-2 md:gap-6 md:overflow-visible xl:grid-cols-[220px_minmax(260px,320px)_minmax(280px,1fr)]"
+    <SwipePanels
+        labels={PANELS}
+        label="Notes panels"
+        controller={panels}
+        wrapperClassName="flex h-full flex-col"
+        className="h-[calc(100dvh-210px)] min-h-[460px] md:grid md:h-full md:min-h-[540px] md:grid-cols-2 md:gap-6 xl:grid-cols-[220px_minmax(260px,320px)_minmax(280px,1fr)]"
       >
-      <section className="ui-card flex w-full shrink-0 snap-start snap-always flex-col md:min-h-[300px] md:w-auto">
+      <section className="ui-card flex flex-col md:min-h-[300px]">
         <CardHeader title="FOLDERS" icon={Folder} />
 
         <div className="min-h-0 flex-1 space-y-0.5 overflow-y-auto">
@@ -398,7 +360,7 @@ export default function NotesPage({
         </div>
       </section>
 
-      <section className="ui-card flex w-full shrink-0 snap-start snap-always flex-col md:min-h-[300px] md:w-auto">
+      <section className="ui-card flex flex-col md:min-h-[300px]">
         <div className="ui-card-header">
           <h2 className="ui-card-title">
             <FileText size={16} className="shrink-0" aria-hidden="true" />
@@ -470,7 +432,7 @@ export default function NotesPage({
         </div>
       </section>
 
-      <section className="ui-card flex w-full min-w-0 shrink-0 snap-start snap-always flex-col md:col-span-2 md:min-h-[420px] md:w-auto xl:col-span-1">
+      <section className="ui-card flex min-w-0 flex-col md:col-span-2 md:min-h-[420px] xl:col-span-1">
         {activeNote ? (
           <>
             <div className="ui-card-header">
@@ -593,7 +555,6 @@ export default function NotesPage({
           </div>
         )}
       </section>
-      </div>
-    </div>
+    </SwipePanels>
   );
 }

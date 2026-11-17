@@ -3,6 +3,8 @@ import { BookmarkPlus, ExternalLink, Plus, Star, Trash2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getLocalizedErrorMessage } from '../../lib/userFacingError';
 import CardHeader from '../common/CardHeader';
+import SwipePanels from '../common/SwipePanels';
+import useSwipePanels from '../../hooks/useSwipePanels';
 import ErrorAlert from '../common/ErrorAlert';
 
 const BOOKMARK_COLUMNS = 'id, title, url, created_at, is_favorite';
@@ -81,6 +83,9 @@ export default function BookmarksPage({ userId }) {
     };
   }, [userId, loadAttempt]);
 
+  const panels = useSwipePanels();
+  const { goToPanel } = panels;
+
   const handleAdd = async (event) => {
     event.preventDefault();
     const trimmedTitle = title.trim();
@@ -111,6 +116,7 @@ export default function BookmarksPage({ userId }) {
         setBookmarks((current) => [data, ...current]);
         setTitle('');
         setUrl('');
+        goToPanel(1);
       } catch (saveError) {
         setError(
           `북마크를 저장하지 못했습니다. ${getLocalizedErrorMessage(saveError, '다시 시도해 주세요.')}`,
@@ -192,6 +198,8 @@ export default function BookmarksPage({ userId }) {
 
   return (
     <div className="max-w-3xl space-y-6">
+      <ErrorAlert message={error} onRetry={retryAction ? handleRetry : undefined} />
+      <SwipePanels labels={['ADD', 'BOOKMARKS']} label="Bookmarks sections" controller={panels}>
       <form
         onSubmit={handleAdd}
         className="ui-card space-y-4"
@@ -232,8 +240,6 @@ export default function BookmarksPage({ userId }) {
           </button>
         </div>
       </form>
-
-      <ErrorAlert message={error} onRetry={retryAction ? handleRetry : undefined} />
 
       <section className="ui-card">
         <CardHeader title={`BOOKMARKS (${bookmarks.length})`} />
@@ -295,6 +301,7 @@ export default function BookmarksPage({ userId }) {
           </ul>
         )}
       </section>
+      </SwipePanels>
     </div>
   );
 }

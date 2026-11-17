@@ -3,6 +3,8 @@ import { Download, FileUp, LoaderCircle, Trash2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getLocalizedErrorMessage } from '../../lib/userFacingError';
 import CardHeader from '../common/CardHeader';
+import SwipePanels from '../common/SwipePanels';
+import useSwipePanels from '../../hooks/useSwipePanels';
 import ErrorAlert from '../common/ErrorAlert';
 
 const BUCKET = 'my-desk-files';
@@ -113,6 +115,9 @@ export default function FilesPage({ userId }) {
     setRetryAction(null);
   };
 
+  const panels = useSwipePanels();
+  const { goToPanel } = panels;
+
   const handleUpload = async (event) => {
     event.preventDefault();
     if (!selectedFile) return;
@@ -143,6 +148,7 @@ export default function FilesPage({ userId }) {
         setSelectedFile(null);
         if (fileInputRef.current) fileInputRef.current.value = '';
         setLoadAttempt((attempt) => attempt + 1);
+        goToPanel(1);
       } catch (uploadError) {
         setError(`파일 업로드에 실패했습니다. ${getErrorMessage(uploadError)}`);
         setRetryAction(() => upload);
@@ -229,6 +235,8 @@ export default function FilesPage({ userId }) {
 
   return (
     <div className="max-w-3xl space-y-6">
+      <ErrorAlert message={error} onRetry={retryAction ? handleRetry : undefined} />
+      <SwipePanels labels={['UPLOAD', 'FILES']} label="Files sections" controller={panels}>
       <form
         onSubmit={handleUpload}
         className="ui-card space-y-4"
@@ -266,8 +274,6 @@ export default function FilesPage({ userId }) {
           </button>
         </div>
       </form>
-
-      <ErrorAlert message={error} onRetry={retryAction ? handleRetry : undefined} />
 
       <section className="ui-card">
         <CardHeader title={`FILES (${files.length})`} />
@@ -329,6 +335,7 @@ export default function FilesPage({ userId }) {
           </ul>
         )}
       </section>
+      </SwipePanels>
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Archive, Download, FileUp, LoaderCircle } from 'lucide-react';
 import { createBackupZip, restoreBackupZip } from '../../lib/backup';
 import { getLocalizedErrorMessage } from '../../lib/userFacingError';
 import CardHeader from '../common/CardHeader';
+import SwipePanels from '../common/SwipePanels';
 
 const STATUS_LABELS = {
   working: '진행 중',
@@ -114,6 +115,7 @@ export default function BackupPage({
 
   return (
     <div className="max-w-3xl space-y-6">
+      <SwipePanels labels={['BACKUP', 'RESTORE']} label="Backup sections">
       <section className="ui-card space-y-4">
         <CardHeader title="FULL DATA BACKUP" icon={Archive} />
         <p className="text-small leading-relaxed text-muted">
@@ -177,6 +179,7 @@ export default function BackupPage({
           {busyAction === 'restore' ? 'RESTORING…' : 'RESTORE & MERGE'}
         </button>
       </section>
+      </SwipePanels>
 
       {(completedAction || operationError || Object.keys(progress).length > 0) && (
         <section
