@@ -146,36 +146,46 @@ body {
   line-height: 1.65;
 }
 
-.tiptap-editor-wrapper .ProseMirror p {
+.tiptap-editor-wrapper .ProseMirror p,
+.tiptap-editor-wrapper > p {
   margin: 0 0 0.5rem 0;
 }
 
-.tiptap-editor-wrapper .ProseMirror h1 {
+/* 엔터로 만든 빈 줄(<p></p>)이 미리보기에서 높이 0으로 사라지지 않게 */
+.tiptap-editor-wrapper p:empty::before {
+  content: '\00a0';
+}
+
+.tiptap-editor-wrapper {
+  line-height: 1.65;
+}
+
+.tiptap-editor-wrapper h1 {
   font-size: 1.5rem;
   font-weight: 800;
   margin: 0.75rem 0 0.5rem;
 }
 
-.tiptap-editor-wrapper .ProseMirror h2 {
+.tiptap-editor-wrapper h2 {
   font-size: 1.25rem;
   font-weight: 700;
   margin: 0.75rem 0 0.5rem;
 }
 
-.tiptap-editor-wrapper .ProseMirror ul {
+.tiptap-editor-wrapper ul {
   list-style-type: disc;
   padding-left: 1.25rem;
   margin: 0.5rem 0;
 }
 
-.tiptap-editor-wrapper .ProseMirror blockquote {
+.tiptap-editor-wrapper blockquote {
   border-left: 3px solid var(--bd, #e5e5e8);
   padding-left: 0.75rem;
   color: var(--sub, #8e8e93);
   margin: 0.5rem 0;
 }
 
-.tiptap-editor-wrapper .ProseMirror mark {
+.tiptap-editor-wrapper mark {
   border-radius: 3px;
   padding: 0 3px;
 }
