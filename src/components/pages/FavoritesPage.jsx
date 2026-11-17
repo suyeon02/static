@@ -9,6 +9,7 @@ import {
 import { supabase } from '../../lib/supabase';
 import { getLocalizedErrorMessage } from '../../lib/userFacingError';
 import CardHeader from '../common/CardHeader';
+import SwipePanels from '../common/SwipePanels';
 import ErrorAlert from '../common/ErrorAlert';
 
 const BOOKMARK_FIELDS = 'id, title, url, is_favorite';
@@ -151,6 +152,7 @@ export default function FavoritesPage({
   return (
     <div className="max-w-3xl space-y-6">
       <ErrorAlert message={error} onRetry={() => setRetryVersion((version) => version + 1)} />
+      <SwipePanels labels={['NOTES', 'PROJECTS', 'BOOKMARKS']} label="Favorites sections">
       <FavoriteSection
         title={`NOTES (${favoriteNotes.length})`}
         icon={FileText}
@@ -219,6 +221,7 @@ export default function FavoritesPage({
           ))
         )}
       </FavoriteSection>
+      </SwipePanels>
     </div>
   );
 }
