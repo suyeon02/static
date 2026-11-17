@@ -42,6 +42,28 @@ const HIGHLIGHT_COLORS = [
   { label: 'Pink', value: '#fce7f3' },
 ];
 
+// 예전 textarea로 저장된 일반 텍스트 노트는 줄바꿈(\n)이 HTML에서 무시되므로
+// 각 줄을 <p> 문단으로 바꿔서 에디터/미리보기에 그대로 보이게 한다.
+const HTML_TAG_RE = /<\/?[a-z][\s\S]*>/i;
+
+function escapeHTML(text) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function toEditorHTML(content) {
+  const value = String(content || '');
+  if (!value) return '';
+  if (HTML_TAG_RE.test(value)) return value;
+  return value
+    .replace(/\r\n?/g, '\n')
+    .split('\n')
+    .map((line) => (line ? `<p>${escapeHTML(line)}</p>` : '<p></p>'))
+    .join('');
+}
+
 function RichNoteEditor({ note, onChange }) {
   const editor = useEditor({
     extensions: [
@@ -50,7 +72,7 @@ function RichNoteEditor({ note, onChange }) {
       Color,
       Highlight.configure({ multicolor: true }),
     ],
-    content: note.content || '',
+    content: toEditorHTML(note.content),
     onUpdate: ({ editor: currentEditor }) => {
       onChange(currentEditor.getHTML());
     },
@@ -60,8 +82,9 @@ function RichNoteEditor({ note, onChange }) {
   useEffect(() => {
     if (!editor) return;
     const currentHTML = editor.getHTML();
-    if (note.content !== currentHTML) {
-      editor.commands.setContent(note.content || '', false);
+    const nextHTML = toEditorHTML(note.content);
+    if (nextHTML !== currentHTML) {
+      editor.commands.setContent(nextHTML, false);
     }
   }, [note.id, editor]);
 
@@ -684,7 +707,7 @@ export default function NotesPage({
             {isPreview ? (
               <div
                 className="tiptap-editor-wrapper flex-1 overflow-y-auto break-words rounded border border-line-soft bg-canvas p-4 text-body"
-                dangerouslySetInnerHTML={{ __html: activeNote.content }}
+                dangerouslySetInnerHTML={{ __html: toEditorHTML(activeNote.content) }}
               />
             ) : (
               <RichNoteEditor
