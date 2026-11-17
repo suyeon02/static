@@ -5,13 +5,14 @@ import { getLocalizedErrorMessage } from '../lib/userFacingError';
 const TASKS_KEY = 'static_todos';
 const MIGRATION_USER_KEY = 'static_todos_migration_user_id';
 const MIGRATION_DONE_KEY = 'static_todos_migration_done_user_id';
-const TASK_FIELDS = 'id, title, done, created_at';
+const TASK_FIELDS = 'id, title, done, due_date, created_at';
 
 function mapTask(row) {
   return {
     id: row.id,
     text: row.title,
     done: row.done,
+    dueDate: row.due_date,
   };
 }
 
@@ -139,12 +140,12 @@ export default function useTasks(userId) {
   }, [userId, reloadVersion]);
 
   const createTask = useCallback(
-    async (text) => {
+    async (text, dueDate) => {
       if (!userId || !isReady) return false;
       try {
         const { data, error: createError } = await supabase
           .from('tasks')
-          .insert({ title: text, done: false })
+          .insert({ title: text, done: false, due_date: dueDate || null })
           .select(TASK_FIELDS)
           .single();
         if (createError) throw createError;

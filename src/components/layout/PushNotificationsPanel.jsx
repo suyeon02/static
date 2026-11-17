@@ -20,8 +20,8 @@ export default function PushNotificationsPanel({
             PUSH REMINDERS
           </h2>
           <p className="mt-2 text-meta leading-relaxed text-muted">
-            캘린더 일정 시작 10분 전에 알려드립니다. 시간은 이 기기의 시간대를
-            기준으로 합니다.
+            할 일은 마감일 오전 9시, 캘린더 일정은 시작 10분 전에 알려드립니다.
+            시간은 이 기기의 시간대를 기준으로 합니다.
           </p>
         </div>
         <button
