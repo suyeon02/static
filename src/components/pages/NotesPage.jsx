@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Check,
   Edit3,
@@ -16,6 +16,7 @@ import ErrorAlert from '../common/ErrorAlert';
 import normalizeTags from '../../lib/normalizeTags';
 
 const UNFILED = 'unfiled';
+const PANELS = ['FOLDERS', 'NOTES', 'EDITOR'];
 
 export default function NotesPage({
   notes,
@@ -35,6 +36,44 @@ export default function NotesPage({
   const [selectedId, setSelectedId] = useState(notes[0]?.id || null);
   const [selectedFolder, setSelectedFolder] = useState(null);
   const [selectedTag, setSelectedTag] = useState(null);
+  const [activePanel, setActivePanel] = useState(0);
+  const panelsRef = useRef(null);
+
+  const isSwipeLayout = () => {
+    const el = panelsRef.current;
+    return Boolean(el) && el.scrollWidth > el.clientWidth + 1;
+  };
+
+  const goToPanel = (index) => {
+    const el = panelsRef.current;
+    const panel = el?.children[index];
+    if (!panel || !isSwipeLayout()) return;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.scrollTo({ left: panel.offsetLeft - el.offsetLeft, behavior: reduceMotion ? 'auto' : 'smooth' });
+    setActivePanel(index);
+  };
+
+  const handlePanelsScroll = () => {
+    const el = panelsRef.current;
+    if (!el) return;
+    let nearest = 0;
+    Array.from(el.children).forEach((panel, index) => {
+      const distance = Math.abs(panel.offsetLeft - el.offsetLeft - el.scrollLeft);
+      const best = Math.abs(el.children[nearest].offsetLeft - el.offsetLeft - el.scrollLeft);
+      if (distance < best) nearest = index;
+    });
+    if (nearest !== activePanel) setActivePanel(nearest);
+  };
+
+  const selectFolder = (folderId) => {
+    setSelectedFolder(folderId);
+    goToPanel(1);
+  };
+
+  const selectNote = (noteId) => {
+    setSelectedId(noteId);
+    goToPanel(2);
+  };
   const [newTag, setNewTag] = useState('');
   const [isPreview, setIsPreview] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
@@ -70,6 +109,7 @@ export default function NotesPage({
       });
       setSelectedId(newNote.id);
       setSelectedTag(null);
+      goToPanel(2);
       setIsPreview(false);
     } catch {
       // The persistence hook displays the error.
@@ -206,7 +246,7 @@ export default function NotesPage({
         }`}
       >
         <button
-          onClick={() => setSelectedFolder(folder.id)}
+          onClick={() => selectFolder(folder.id)}
           type="button"
           aria-current={isSelected ? 'true' : undefined}
           className="flex h-9 min-w-0 flex-1 items-center gap-2 px-2 text-left text-small cursor-pointer"
@@ -251,13 +291,33 @@ export default function NotesPage({
   };
 
   return (
-    <div className="grid h-full min-h-[540px] grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-[220px_minmax(260px,320px)_minmax(280px,1fr)]">
-      <section className="ui-card flex min-h-[300px] flex-col">
+    <div className="flex h-full flex-col">
+      <nav aria-label="Notes panels" className="mb-3 grid grid-cols-3 gap-1 md:hidden">
+        {PANELS.map((label, index) => (
+          <button
+            key={label}
+            type="button"
+            onClick={() => goToPanel(index)}
+            aria-current={activePanel === index ? 'true' : undefined}
+            className={`ui-segment h-8 tracking-[0.04em] ${
+              activePanel === index ? 'ui-segment-active' : 'ui-segment-idle'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
+      <div
+        ref={panelsRef}
+        onScroll={handlePanelsScroll}
+        className="scrollbar-none flex h-[calc(100dvh-210px)] min-h-[460px] snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain md:grid md:h-full md:min-h-[540px] md:snap-none md:grid-cols-2 md:gap-6 md:overflow-visible xl:grid-cols-[220px_minmax(260px,320px)_minmax(280px,1fr)]"
+      >
+      <section className="ui-card flex w-full shrink-0 snap-start snap-always flex-col md:min-h-[300px] md:w-auto">
         <CardHeader title="FOLDERS" icon={Folder} />
 
         <div className="min-h-0 flex-1 space-y-0.5 overflow-y-auto">
           <button
-            onClick={() => setSelectedFolder(null)}
+            onClick={() => selectFolder(null)}
             className={`flex h-9 w-full items-center gap-2 rounded px-2 text-left text-small font-bold cursor-pointer ${
               selectedFolder === null ? 'bg-ink text-white' : 'hover:bg-hover'
             }`}
@@ -266,7 +326,7 @@ export default function NotesPage({
             <span>All notes</span>
           </button>
           <button
-            onClick={() => setSelectedFolder(UNFILED)}
+            onClick={() => selectFolder(UNFILED)}
             className={`flex h-9 w-full items-center gap-2 rounded px-2 text-left text-small cursor-pointer ${
               selectedFolder === UNFILED
                 ? 'bg-ink text-white'
@@ -338,7 +398,7 @@ export default function NotesPage({
         </div>
       </section>
 
-      <section className="ui-card flex min-h-[300px] flex-col">
+      <section className="ui-card flex w-full shrink-0 snap-start snap-always flex-col md:min-h-[300px] md:w-auto">
         <div className="ui-card-header">
           <h2 className="ui-card-title">
             <FileText size={16} className="shrink-0" aria-hidden="true" />
@@ -368,7 +428,7 @@ export default function NotesPage({
               return (
                 <div
                   key={note.id}
-                  onClick={() => setSelectedId(note.id)}
+                  onClick={() => selectNote(note.id)}
                   className={`group flex cursor-pointer items-start justify-between gap-2 border-b border-line-soft py-3 ${
                     isSelected ? 'bg-subtle' : 'hover:bg-canvas'
                   }`}
@@ -410,7 +470,7 @@ export default function NotesPage({
         </div>
       </section>
 
-      <section className="ui-card flex min-h-[420px] min-w-0 flex-col md:col-span-2 xl:col-span-1">
+      <section className="ui-card flex w-full min-w-0 shrink-0 snap-start snap-always flex-col md:col-span-2 md:min-h-[420px] md:w-auto xl:col-span-1">
         {activeNote ? (
           <>
             <div className="ui-card-header">
@@ -533,6 +593,7 @@ export default function NotesPage({
           </div>
         )}
       </section>
+      </div>
     </div>
   );
 }
