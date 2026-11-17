@@ -145,14 +145,14 @@ export async function createBackupZip({
   };
 
   for (const table of DATABASE_TABLES) {
-    report(onProgress, table, { status: 'working', message: 'Reading data…' });
+    report(onProgress, table, { status: 'working', message: '데이터를 읽는 중…' });
     try {
       const rows = await loadTableRows(table);
       zipFiles[DATA_FILES[table]] = strToU8(JSON.stringify(rows));
       report(onProgress, table, {
         status: 'done',
         count: rows.length,
-        message: `${rows.length} records`,
+        message: `${rows.length}개 항목`,
       });
     } catch (error) {
       const errorMessage = getLocalizedErrorMessage(error, '다시 시도해 주세요.');
@@ -166,15 +166,15 @@ export async function createBackupZip({
   report(onProgress, 'static_memo', {
     status: 'done',
     count: Number(Boolean(memoText)),
-    message: `${Number(Boolean(memoText))} memo`,
+    message: `메모 ${Number(Boolean(memoText))}개`,
   });
   report(onProgress, 'static_quick_memos', {
     status: 'done',
     count: quickMemos.length,
-    message: `${quickMemos.length} quick memos`,
+    message: `퀵메모 ${quickMemos.length}개`,
   });
 
-  report(onProgress, 'files', { status: 'working', message: 'Listing files…' });
+  report(onProgress, 'files', { status: 'working', message: '파일 목록을 확인하는 중…' });
   let objects;
   try {
     objects = await listStorageObjects(userId);
@@ -190,7 +190,7 @@ export async function createBackupZip({
       status: 'working',
       done: index,
       total: objects.length,
-      message: `Downloading ${index + 1} of ${objects.length}`,
+      message: `${objects.length}개 중 ${index + 1}번째 다운로드 중`,
     });
     try {
       await assertSignedInUser(userId);
@@ -212,7 +212,7 @@ export async function createBackupZip({
   report(onProgress, 'files', {
     status: 'done',
     count: objects.length,
-    message: `${objects.length} files`,
+    message: `파일 ${objects.length}개`,
   });
 
   zipFiles['manifest.json'] = strToU8(JSON.stringify(manifest, null, 2));
@@ -355,7 +355,7 @@ async function importTable(table, rows, userId, onProgress) {
     status: 'working',
     done: 0,
     total: rows.length,
-    message: `Importing ${rows.length} records…`,
+    message: `${rows.length}개 항목을 가져오는 중…`,
   });
   const result = { imported: 0, skipped: 0, errors: [] };
   try {
@@ -387,7 +387,7 @@ async function importTable(table, rows, userId, onProgress) {
         status: 'working',
         done: index + 1,
         total: rows.length,
-        message: `${index + 1} of ${rows.length}`,
+        message: `${rows.length}개 중 ${index + 1}번째`,
       });
     }
   } catch (error) {
@@ -398,7 +398,7 @@ async function importTable(table, rows, userId, onProgress) {
     ...result,
     message: result.errors.length
       ? `${result.imported}개 가져옴, ${result.skipped}개 유지, 오류 ${result.errors.length}건`
-      : `${result.imported} imported, ${result.skipped} kept, ${result.errors.length} errors`,
+      : `${result.imported}개 가져옴, ${result.skipped}개 유지`,
   });
   return result;
 }
@@ -493,7 +493,7 @@ async function importStorageFiles(files, archive, userId, onProgress) {
         status: 'working',
         done: index + 1,
         total: files.length,
-        message: `${index + 1} of ${files.length}`,
+        message: `${files.length}개 중 ${index + 1}번째`,
       });
     }
   } catch (error) {
@@ -504,7 +504,7 @@ async function importStorageFiles(files, archive, userId, onProgress) {
     ...result,
     message: result.errors.length
       ? `${result.imported}개 가져옴, ${result.skipped}개 유지, 오류 ${result.errors.length}건`
-      : `${result.imported} imported, ${result.skipped} kept, ${result.errors.length} errors`,
+      : `${result.imported}개 가져옴, ${result.skipped}개 유지`,
   });
   return result;
 }
@@ -517,7 +517,7 @@ export async function restoreBackupZip({
 }) {
   const { strFromU8, unzipSync } = await import('fflate');
   await assertSignedInUser(userId);
-  report(onProgress, 'archive', { status: 'working', message: 'Validating ZIP…' });
+  report(onProgress, 'archive', { status: 'working', message: 'ZIP 파일을 확인하는 중…' });
   let archive;
   let validated;
   try {
@@ -525,7 +525,7 @@ export async function restoreBackupZip({
     validated = validateArchive(archive, strFromU8);
     report(onProgress, 'archive', {
       status: 'done',
-      message: 'Manifest and entries validated',
+      message: '백업 파일 확인 완료',
     });
   } catch (error) {
     report(onProgress, 'archive', {

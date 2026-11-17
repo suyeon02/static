@@ -9,19 +9,16 @@ export default function TodoWidget({
   onCreateTodo,
   onToggleTodo,
   onDeleteTodo,
-  onUpdateTodoDueDate,
 }) {
   const [input, setInput] = useState('');
-  const [dueDate, setDueDate] = useState('');
 
   const completedCount = todos.filter((t) => t.done).length;
 
   const addTodo = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
-    if (await onCreateTodo(input.trim(), dueDate)) {
+    if (await onCreateTodo(input.trim())) {
       setInput('');
-      setDueDate('');
     }
   };
 
@@ -68,29 +65,17 @@ export default function TodoWidget({
               >
                 {todo.done && <Check size={11} strokeWidth={3} />}
               </button>
-              <div className="min-w-0 flex-1">
-                <button
-                  type="button"
-                  onClick={() => toggleTodo(todo)}
-                  disabled={!isReady}
-                  tabIndex={-1}
-                  className={`block w-full cursor-pointer truncate text-left text-small ${
-                    todo.done ? 'text-muted line-through' : 'text-ink'
-                  }`}
-                >
-                  {todo.text}
-                </button>
-                <input
-                  type="date"
-                  value={todo.dueDate || ''}
-                  onChange={(event) =>
-                    void onUpdateTodoDueDate(todo.id, event.target.value)
-                  }
-                  disabled={!isReady}
-                  aria-label={`Due date for ${todo.text}`}
-                  className="mt-0.5 h-5 w-[8rem] rounded bg-transparent text-meta text-muted tabular-nums outline-none hover:text-ink focus:text-ink"
-                />
-              </div>
+              <button
+                type="button"
+                onClick={() => toggleTodo(todo)}
+                disabled={!isReady}
+                tabIndex={-1}
+                className={`min-w-0 flex-1 cursor-pointer truncate text-left text-small ${
+                  todo.done ? 'text-muted line-through' : 'text-ink'
+                }`}
+              >
+                {todo.text}
+              </button>
               <button
                 type="button"
                 onClick={() => deleteTodo(todo.id)}
@@ -114,14 +99,6 @@ export default function TodoWidget({
           placeholder="+ New task..."
           aria-label="New task"
           className="ui-input flex-1"
-        />
-        <input
-          type="date"
-          value={dueDate}
-          onChange={(event) => setDueDate(event.target.value)}
-          disabled={!isReady}
-          aria-label="Task due date"
-          className="ui-input w-[8.5rem] px-2 text-meta tabular-nums"
         />
         <button
           type="submit"

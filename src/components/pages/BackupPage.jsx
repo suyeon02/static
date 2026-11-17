@@ -4,18 +4,24 @@ import { createBackupZip, restoreBackupZip } from '../../lib/backup';
 import { getLocalizedErrorMessage } from '../../lib/userFacingError';
 import CardHeader from '../common/CardHeader';
 
+const STATUS_LABELS = {
+  working: '진행 중',
+  done: '완료',
+  error: '오류',
+};
+
 const CATEGORY_LABELS = {
-  archive: 'Backup validation',
-  note_folders: 'Note folders',
-  notes: 'Notes',
-  tasks: 'Tasks',
-  events: 'Events',
-  projects: 'Projects',
-  bookmarks: 'Bookmarks',
-  trash_items: 'Trash',
-  static_memo: 'Memo',
-  static_quick_memos: 'Quick memos',
-  files: 'Uploaded files',
+  archive: '백업 파일 확인',
+  note_folders: '노트 폴더',
+  notes: '노트',
+  tasks: '할 일',
+  events: '일정',
+  projects: '프로젝트',
+  bookmarks: '북마크',
+  trash_items: '휴지통',
+  static_memo: '메모',
+  static_quick_memos: '퀵메모',
+  files: '업로드한 파일',
 };
 
 function getErrorMessage(error) {
@@ -61,7 +67,7 @@ export default function BackupPage({
       link.click();
       link.remove();
       window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-      setCompletedAction('Your ZIP backup was downloaded.');
+      setCompletedAction('ZIP 백업 파일을 다운로드했습니다.');
     } catch (error) {
       setOperationError(`백업을 완료하지 못했습니다. ${getErrorMessage(error)}`);
     } finally {
@@ -94,7 +100,7 @@ export default function BackupPage({
       setCompletedAction(
         errorCount
           ? '오류와 함께 복원이 완료되었습니다. 아래 항목별 내용을 확인해 주세요.'
-          : 'Restore completed. Existing records and files were kept.',
+          : '복원이 완료되었습니다. 기존 데이터와 파일은 그대로 유지했습니다.',
       );
       onRestoreComplete();
     } catch (error) {
@@ -111,9 +117,9 @@ export default function BackupPage({
       <section className="ui-card space-y-4">
         <CardHeader title="FULL DATA BACKUP" icon={Archive} />
         <p className="text-small leading-relaxed text-muted">
-          Download a ZIP containing your signed-in account&apos;s notes, folders,
-          tasks, events, projects, bookmarks, trash, local memos, and every
-          uploaded file with its original filename.
+          현재 로그인한 계정의 노트, 폴더, 할 일, 일정, 프로젝트, 북마크,
+          휴지통, 메모와 업로드한 모든 파일을 원래 파일명 그대로 ZIP 파일 하나에
+          담아 내려받습니다.
         </p>
         <button
           type="button"
@@ -133,13 +139,13 @@ export default function BackupPage({
       <section className="ui-card space-y-4">
         <CardHeader title="RESTORE FROM ZIP" icon={FileUp} />
         <p className="text-small leading-relaxed text-muted">
-          Restore uses merge mode: existing data and files always win. Records
-          with duplicate IDs and files with duplicate paths are skipped, not
-          overwritten. Folders are imported before notes. Restored data is
-          associated with the currently signed-in account.
+          복원은 병합 방식으로 진행되며, 기존 데이터와 파일이 항상 우선합니다.
+          ID가 같은 항목이나 경로가 같은 파일은 덮어쓰지 않고 건너뜁니다. 폴더를
+          노트보다 먼저 가져오며, 복원한 데이터는 현재 로그인한 계정에
+          저장됩니다.
         </p>
         <label className="block space-y-1.5 text-small font-bold">
-          STATIC backup ZIP
+          STATIC 백업 ZIP 파일
           <input
             ref={fileInputRef}
             type="file"
@@ -205,7 +211,7 @@ export default function BackupPage({
                           : 'text-muted'
                     }
                   >
-                    {item.status === 'error' ? '오류' : item.status}
+                    {STATUS_LABELS[item.status] || item.status}
                   </span>
                 </div>
                 {item.total > 0 && (
