@@ -253,7 +253,11 @@ export default function App() {
           onSelectSearchResult={handleSelectSearchResult}
         />
 
-        <div className="flex-1 overflow-y-auto p-4 md:p-8">
+        <div
+          className={`flex-1 overflow-y-auto p-4 md:p-8 ${
+            activeMenu === 'schedule' ? 'flex flex-col' : ''
+          }`}
+        >
           {pageMeta && (
             <PageHeader title={pageMeta.title} description={pageMeta.description} />
           )}
@@ -353,12 +357,15 @@ export default function App() {
           )}
 
           {activeMenu === 'schedule' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
-              <CalendarWidget
-                selectedDate={selectedDate}
-                onSelectDate={setSelectedDate}
-              />
+            <div className="grid flex-1 grid-cols-1 gap-6 md:min-h-0 md:grid-cols-[minmax(280px,360px)_minmax(0,1fr)]">
+              <div className="md:self-start">
+                <CalendarWidget
+                  selectedDate={selectedDate}
+                  onSelectDate={setSelectedDate}
+                />
+              </div>
               <ScheduleWidget
+                className="h-[65vh] md:h-full"
                 schedules={filteredSchedules}
                 selectedDate={selectedDate}
                 isLoading={isSchedulesLoading}
