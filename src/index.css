@@ -143,12 +143,12 @@ body {
 .tiptap-editor-wrapper .ProseMirror {
   min-height: 260px;
   outline: none;
-  line-height: 1.65;
+  line-height: 1.5;
 }
 
 .tiptap-editor-wrapper .ProseMirror p,
 .tiptap-editor-wrapper > p {
-  margin: 0 0 0.5rem 0;
+  margin: 0;
 }
 
 /* 엔터로 만든 빈 줄(<p></p>)이 미리보기에서 높이 0으로 사라지지 않게 */
@@ -157,7 +157,7 @@ body {
 }
 
 .tiptap-editor-wrapper {
-  line-height: 1.65;
+  line-height: 1.5;
 }
 
 .tiptap-editor-wrapper h1 {
