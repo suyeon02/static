@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 function readHashPage(pages, fallback) {
-  const id = decodeURIComponent(window.location.hash.slice(1));
+  const id = window.location.hash.slice(1);
   return Object.hasOwn(pages, id) ? id : fallback;
 }
 
