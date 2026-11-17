@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Plus, X, Check, CalendarDays } from 'lucide-react';
 import WidgetCard from '../common/WidgetCard';
 import { getDueDateInfo } from '../../lib/dueDate';
@@ -8,6 +8,18 @@ const FILTERS = [
   { id: 'active', label: 'ACTIVE', empty: '남은 할 일이 없습니다.' },
   { id: 'done', label: 'DONE', empty: '완료한 할 일이 없습니다.' },
 ];
+
+function useToday() {
+  const [today, setToday] = useState(() => new Date());
+
+  useEffect(() => {
+    const nextMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+    const timer = setTimeout(() => setToday(new Date()), nextMidnight - Date.now() + 1000);
+    return () => clearTimeout(timer);
+  }, [today]);
+
+  return today;
+}
 
 function matchesFilter(todo, filter) {
   if (filter === 'active') return !todo.done;
@@ -26,6 +38,7 @@ export default function TodoWidget({
   const [input, setInput] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [filter, setFilter] = useState('all');
+  const today = useToday();
 
   const completedCount = todos.filter((t) => t.done).length;
   const progress = todos.length === 0 ? 0 : (completedCount / todos.length) * 100;
@@ -87,7 +100,7 @@ export default function TodoWidget({
           <div className="ui-empty">{activeFilter.empty}</div>
         ) : (
           visibleTodos.map((todo) => {
-            const due = getDueDateInfo(todo.dueDate);
+            const due = getDueDateInfo(todo.dueDate, today);
             return (
               <div
                 key={todo.id}
