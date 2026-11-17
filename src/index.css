@@ -118,3 +118,64 @@ body {
     @apply md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100;
   }
 }
+
+/* =========================================================
+   Hover Scroll Effect for Long Titles
+   ========================================================= */
+.hover-scroll-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: max-width 0.3s ease;
+}
+
+.hover-scroll-container:hover .hover-scroll-title {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  word-break: break-all;
+}
+
+
+/* =========================================================
+   TipTap WYSIWYG Editor Styles
+   ========================================================= */
+.tiptap-editor-wrapper .ProseMirror {
+  min-height: 260px;
+  outline: none;
+  line-height: 1.65;
+}
+
+.tiptap-editor-wrapper .ProseMirror p {
+  margin: 0 0 0.5rem 0;
+}
+
+.tiptap-editor-wrapper .ProseMirror h1 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0.75rem 0 0.5rem;
+}
+
+.tiptap-editor-wrapper .ProseMirror h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0.75rem 0 0.5rem;
+}
+
+.tiptap-editor-wrapper .ProseMirror ul {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin: 0.5rem 0;
+}
+
+.tiptap-editor-wrapper .ProseMirror blockquote {
+  border-left: 3px solid var(--bd, #e5e5e8);
+  padding-left: 0.75rem;
+  color: var(--sub, #8e8e93);
+  margin: 0.5rem 0;
+}
+
+.tiptap-editor-wrapper .ProseMirror mark {
+  border-radius: 3px;
+  padding: 0 3px;
+}

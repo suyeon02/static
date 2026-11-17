@@ -12,6 +12,12 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",
+    "@tiptap/extension-color": "^3.34.0",
+    "@tiptap/extension-highlight": "^3.34.0",
+    "@tiptap/extension-text-style": "^3.34.0",
+    "@tiptap/pm": "^3.34.0",
+    "@tiptap/react": "^3.34.0",
+    "@tiptap/starter-kit": "^3.34.0",
     "fflate": "^0.8.3",
     "lucide-react": "^1.73.0",
     "react": "^19.3.1",

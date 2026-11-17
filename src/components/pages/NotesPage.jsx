@@ -1,16 +1,23 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  Bold,
   Check,
   Edit3,
   Eye,
   FileText,
   Folder,
+  Highlighter,
   Plus,
   Star,
   Tag,
   Trash2,
   X,
 } from 'lucide-react';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import { TextStyle } from '@tiptap/extension-text-style';
+import Color from '@tiptap/extension-color';
+import Highlight from '@tiptap/extension-highlight';
 import CardHeader from '../common/CardHeader';
 import SwipePanels from '../common/SwipePanels';
 import ErrorAlert from '../common/ErrorAlert';
@@ -19,6 +26,136 @@ import useSwipePanels from '../../hooks/useSwipePanels';
 
 const UNFILED = 'unfiled';
 const PANELS = ['FOLDERS', 'NOTES', 'EDITOR'];
+
+const TEXT_COLORS = [
+  { label: 'Default', value: '#191919' },
+  { label: 'Orange', value: '#ff7a30' },
+  { label: 'Red', value: '#e5484d' },
+  { label: 'Blue', value: '#2563eb' },
+  { label: 'Green', value: '#30a46c' },
+];
+
+const HIGHLIGHT_COLORS = [
+  { label: 'Yellow', value: '#fef08a' },
+  { label: 'Orange Soft', value: '#ffedd5' },
+  { label: 'Mint', value: '#d1fae5' },
+  { label: 'Pink', value: '#fce7f3' },
+];
+
+function RichNoteEditor({ note, onChange }) {
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      TextStyle,
+      Color,
+      Highlight.configure({ multicolor: true }),
+    ],
+    content: note.content || '',
+    onUpdate: ({ editor: currentEditor }) => {
+      onChange(currentEditor.getHTML());
+    },
+  });
+
+  // 다른 노트를 선택했을 때 에디터 내용을 해당 노트로 동기화
+  useEffect(() => {
+    if (!editor) return;
+    const currentHTML = editor.getHTML();
+    if (note.content !== currentHTML) {
+      editor.commands.setContent(note.content || '', false);
+    }
+  }, [note.id, editor]);
+
+  if (!editor) return null;
+
+  return (
+    <div className="flex flex-1 flex-col min-h-0">
+      {/* 리치 텍스트 서식 툴바 */}
+      <div className="mb-2 flex flex-wrap items-center gap-2 rounded border border-line-soft bg-subtle p-1.5">
+        {/* 굵기(Bold) 버튼 */}
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          aria-pressed={editor.isActive('bold')}
+          title="굵게 (Ctrl+B)"
+          className={`flex h-7 w-7 items-center justify-center rounded border text-xs font-bold transition-colors cursor-pointer ${
+            editor.isActive('bold')
+              ? 'border-ink bg-ink text-white'
+              : 'border-line-soft bg-canvas text-ink hover:bg-hover'
+          }`}
+        >
+          <Bold size={13} />
+        </button>
+
+        <div className="h-4 w-px bg-line-soft" />
+
+        {/* 텍스트 컬러 팔레트 */}
+        <div className="flex items-center gap-1" title="글자 색상">
+          <span className="px-1 text-[11px] font-bold text-muted">A</span>
+          {TEXT_COLORS.map((c) => {
+            const isActive = editor.isActive('textStyle', { color: c.value });
+            return (
+              <button
+                key={c.value}
+                type="button"
+                onClick={() => {
+                  if (c.value === '#191919') {
+                    editor.chain().focus().unsetColor().run();
+                  } else {
+                    editor.chain().focus().setColor(c.value).run();
+                  }
+                }}
+                title={`글자색: ${c.label}`}
+                aria-label={`Text color ${c.label}`}
+                className={`h-5 w-5 rounded-full border transition-transform cursor-pointer ${
+                  isActive ? 'scale-110 ring-2 ring-ink ring-offset-1' : 'border-black/15 hover:scale-105'
+                }`}
+                style={{ backgroundColor: c.value }}
+              />
+            );
+          })}
+        </div>
+
+        <div className="h-4 w-px bg-line-soft" />
+
+        {/* 형광펜 팔레트 */}
+        <div className="flex items-center gap-1" title="형광펜">
+          <Highlighter size={13} className="mx-1 text-muted" />
+          {HIGHLIGHT_COLORS.map((h) => {
+            const isActive = editor.isActive('highlight', { color: h.value });
+            return (
+              <button
+                key={h.value}
+                type="button"
+                onClick={() =>
+                  editor.chain().focus().toggleHighlight({ color: h.value }).run()
+                }
+                title={`형광펜: ${h.label}`}
+                aria-label={`Highlight ${h.label}`}
+                className={`h-5 w-5 rounded border transition-transform cursor-pointer ${
+                  isActive ? 'scale-110 ring-2 ring-ink ring-offset-1' : 'border-black/15 hover:scale-105'
+                }`}
+                style={{ backgroundColor: h.value }}
+              />
+            );
+          })}
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().unsetHighlight().run()}
+            title="형광펜 지우기"
+            className="ml-0.5 rounded px-1.5 py-0.5 text-[11px] text-muted hover:bg-hover hover:text-ink cursor-pointer"
+          >
+            해제
+          </button>
+        </div>
+      </div>
+
+      {/* 본문 편집 영역 */}
+      <div className="tiptap-editor-wrapper ui-input h-auto min-h-[260px] flex-1 overflow-y-auto p-4 text-body">
+        <EditorContent editor={editor} />
+      </div>
+    </div>
+  );
+}
 
 export default function NotesPage({
   notes,
@@ -50,6 +187,7 @@ export default function NotesPage({
     setSelectedId(noteId);
     goToPanel(2);
   };
+
   const [newTag, setNewTag] = useState('');
   const [isPreview, setIsPreview] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
@@ -62,17 +200,21 @@ export default function NotesPage({
       : selectedFolder
         ? notes.filter((note) => note.folderId === selectedFolder)
         : notes;
+
   const availableTags = [
     ...new Set([
       ...folderNotes.flatMap((note) => note.tags || []),
       ...(selectedTag ? [selectedTag] : []),
     ]),
   ].sort((a, b) => a.localeCompare(b));
+
   const visibleNotes = selectedTag
     ? folderNotes.filter((note) => (note.tags || []).includes(selectedTag))
     : folderNotes;
+
   const activeNote =
     visibleNotes.find((note) => note.id === selectedId) || visibleNotes[0];
+
   const activeFolderId =
     selectedFolder && selectedFolder !== UNFILED ? selectedFolder : null;
 
@@ -80,7 +222,7 @@ export default function NotesPage({
     try {
       const newNote = await onCreateNote({
         title: `untitled_${notes.length + 1}`,
-        content: '# New Note\n\n> Start writing your markdown here...',
+        content: '<p>Start writing your note here...</p>',
         folderId: activeFolderId,
       });
       setSelectedId(newNote.id);
@@ -268,12 +410,12 @@ export default function NotesPage({
 
   return (
     <SwipePanels
-        labels={PANELS}
-        label="Notes panels"
-        controller={panels}
-        wrapperClassName="flex h-full flex-col"
-        className="h-[calc(100dvh-210px)] min-h-[460px] md:grid md:h-full md:min-h-[540px] md:grid-cols-2 md:gap-6 xl:grid-cols-[220px_minmax(260px,320px)_minmax(280px,1fr)]"
-      >
+      labels={PANELS}
+      label="Notes panels"
+      controller={panels}
+      wrapperClassName="flex h-full flex-col"
+      className="h-[calc(100dvh-210px)] min-h-[460px] md:grid md:h-full md:min-h-[540px] md:grid-cols-2 md:gap-6 xl:grid-cols-[220px_minmax(260px,320px)_minmax(280px,1fr)]"
+    >
       <section className="ui-card flex flex-col md:min-h-[300px]">
         <CardHeader title="FOLDERS" icon={Folder} />
 
@@ -395,8 +537,11 @@ export default function NotesPage({
                     isSelected ? 'bg-subtle' : 'hover:bg-canvas'
                   }`}
                 >
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-small font-bold">
+                  <div className="min-w-0 flex-1 hover-scroll-container">
+                    <div
+                      title={note.title}
+                      className="hover-scroll-title text-body font-bold"
+                    >
                       {note.title}
                     </div>
                     <div className="mt-1 flex flex-wrap gap-1">
@@ -537,15 +682,14 @@ export default function NotesPage({
             </div>
 
             {isPreview ? (
-              <div className="flex-1 overflow-y-auto whitespace-pre-wrap break-words rounded border border-line-soft bg-canvas p-4 text-body">
-                {activeNote.content}
-              </div>
+              <div
+                className="tiptap-editor-wrapper flex-1 overflow-y-auto break-words rounded border border-line-soft bg-canvas p-4 text-body"
+                dangerouslySetInnerHTML={{ __html: activeNote.content }}
+              />
             ) : (
-              <textarea
-                value={activeNote.content}
-                onChange={(event) => handleUpdate('content', event.target.value)}
-                placeholder="Write markdown..."
-                className="ui-input h-auto min-h-[280px] flex-1 resize-none p-4 text-body"
+              <RichNoteEditor
+                note={activeNote}
+                onChange={(html) => handleUpdate('content', html)}
               />
             )}
           </>

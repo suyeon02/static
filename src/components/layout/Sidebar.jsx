@@ -71,7 +71,7 @@ export default function Sidebar({ activeMenu, onSelectMenu, isOpen, onClose }) {
       >
         {NAV_GROUPS.map((group) => (
           <div key={group.title}>
-            <div className="px-3 mb-2 text-meta font-bold text-muted tracking-[0.1em]">
+            <div className="px-3 mb-2 text-xs font-bold text-muted tracking-[0.1em]">
               {group.title}
             </div>
             <div className="flex flex-col gap-0.5">
@@ -88,7 +88,7 @@ export default function Sidebar({ activeMenu, onSelectMenu, isOpen, onClose }) {
                       onSelectMenu(item.id);
                       onClose();
                     }}
-                    className={`w-full h-9 flex items-center gap-3 px-3 rounded-md text-left text-small tracking-[0.04em] transition-colors cursor-pointer ${
+                    className={`w-full h-9 flex items-center gap-3 px-3 rounded-md text-left text-sm tracking-[0.04em] transition-colors cursor-pointer ${
                       isActive
                         ? 'bg-ink text-white font-bold'
                         : 'text-ink font-medium hover:bg-hover'
