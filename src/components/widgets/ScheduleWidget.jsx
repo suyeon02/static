@@ -9,6 +9,7 @@ export default function ScheduleWidget({
   isReady,
   onCreateSchedule,
   onDeleteSchedule,
+  className = '',
 }) {
   const [time, setTime] = useState('14:00');
   const [title, setTitle] = useState('');
@@ -33,6 +34,7 @@ export default function ScheduleWidget({
   return (
     <WidgetCard
       title="SCHEDULE"
+      className={className}
       rightSlot={
         <span className="rounded bg-ink px-2 py-0.5 text-meta font-bold text-white tabular-nums">
           {selectedDate}
