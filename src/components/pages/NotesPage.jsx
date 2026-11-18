@@ -7,6 +7,8 @@ import {
   FileText,
   Folder,
   Highlighter,
+  List,
+  ListOrdered,
   Plus,
   Star,
   Tag,
@@ -21,7 +23,10 @@ import Highlight from '@tiptap/extension-highlight';
 import ErrorAlert from '../common/ErrorAlert';
 import normalizeTags from '../../lib/normalizeTags';
 
+
 const UNFILED = 'unfiled';
+
+
 
 const TEXT_COLORS = [
   { label: 'Default', value: '#191919' },
@@ -51,6 +56,7 @@ function toEditorHTML(content) {
   const value = String(content || '');
   if (!value) return '';
   if (HTML_TAG_RE.test(value)) return value;
+
   return value
     .replace(/\r\n?/g, '\n')
     .split('\n')
@@ -74,8 +80,10 @@ function RichNoteEditor({ note, onChange }) {
 
   useEffect(() => {
     if (!editor) return;
+
     const currentHTML = editor.getHTML();
     const nextHTML = toEditorHTML(note.content);
+
     if (nextHTML !== currentHTML) {
       editor.commands.setContent(nextHTML, false);
     }
@@ -99,13 +107,45 @@ function RichNoteEditor({ note, onChange }) {
         >
           <Bold size={13} />
         </button>
+{/* 글머리 목록 */}
+<button
+  type="button"
+  onClick={() => editor.chain().focus().toggleBulletList().run()}
+  aria-label="글머리 목록"
+  aria-pressed={editor.isActive('bulletList')}
+  title="글머리 목록"
+  className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded border text-xs transition-colors ${
+    editor.isActive('bulletList')
+      ? 'border-ink bg-ink text-white'
+      : 'border-line-soft bg-canvas text-ink hover:bg-hover'
+  }`}
+>
+  <List size={15} />
+</button>
 
+{/* 숫자 목록 */}
+<button
+  type="button"
+  onClick={() => editor.chain().focus().toggleOrderedList().run()}
+  aria-label="숫자 목록"
+  aria-pressed={editor.isActive('orderedList')}
+  title="숫자 목록"
+  className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded border text-xs transition-colors ${
+    editor.isActive('orderedList')
+      ? 'border-ink bg-ink text-white'
+      : 'border-line-soft bg-canvas text-ink hover:bg-hover'
+  }`}
+>
+  <ListOrdered size={15} />
+</button>
         <div className="mx-0.5 h-4 w-px bg-line-soft" />
 
         <div className="flex items-center gap-1" title="글자 색상">
           <span className="px-1 text-[11px] font-bold text-muted">A</span>
+
           {TEXT_COLORS.map((c) => {
             const isActive = editor.isActive('textStyle', { color: c.value });
+
             return (
               <button
                 key={c.value}
@@ -134,8 +174,10 @@ function RichNoteEditor({ note, onChange }) {
 
         <div className="flex items-center gap-1" title="형광펜">
           <Highlighter size={13} className="mx-1 text-muted" />
+
           {HIGHLIGHT_COLORS.map((h) => {
             const isActive = editor.isActive('highlight', { color: h.value });
+
             return (
               <button
                 key={h.value}
@@ -154,6 +196,7 @@ function RichNoteEditor({ note, onChange }) {
               />
             );
           })}
+
           <button
             type="button"
             onClick={() => editor.chain().focus().unsetHighlight().run()}
@@ -194,6 +237,7 @@ export default function NotesPage({
   const [isPreview, setIsPreview] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [showFolderForm, setShowFolderForm] = useState(false);
+  const [isDeletingFolder, setIsDeletingFolder] = useState(false);
 
   const folderNotes =
     selectedFolder === UNFILED
@@ -227,6 +271,7 @@ export default function NotesPage({
         content: '<p>Start writing your note here...</p>',
         folderId: activeFolderId,
       });
+
       setSelectedId(newNote.id);
       setSelectedTag(null);
       setIsPreview(false);
@@ -237,16 +282,43 @@ export default function NotesPage({
 
   const handleCreateFolder = async (event) => {
     event.preventDefault();
+
     const name = newFolderName.trim();
     if (!name) return;
 
     try {
       const folder = await onCreateFolder(name);
+
       setNewFolderName('');
       setShowFolderForm(false);
       setSelectedFolder(folder.id);
     } catch {
       // The persistence hook displays the error.
+    }
+  };
+
+  const handleDeleteFolder = async () => {
+    if (isDeletingFolder) return;
+
+    const folder = folders.find((item) => item.id === selectedFolder);
+    if (!folder) return;
+
+    if (!window.confirm(`"${folder.name}" 폴더를 삭제할까요?`)) {
+      return;
+    }
+
+    setIsDeletingFolder(true);
+
+    try {
+      await onDeleteFolder(folder.id);
+
+      setSelectedFolder(null);
+      setSelectedTag(null);
+    } catch (error) {
+      console.error('폴더 삭제 실패:', error);
+      // useNotes의 foldersError가 아래 ErrorAlert에 표시됩니다.
+    } finally {
+      setIsDeletingFolder(false);
     }
   };
 
@@ -266,6 +338,7 @@ export default function NotesPage({
   const handleAddTag = (event) => {
     event.preventDefault();
     if (!activeNote) return;
+
     const tag = normalizeTags([newTag])[0];
     if (!tag) return;
 
@@ -283,6 +356,7 @@ export default function NotesPage({
   const handleDelete = async (note) => {
     try {
       await onDeleteNote(note);
+
       if (selectedId === note.id) {
         setSelectedId(null);
       }
@@ -302,6 +376,7 @@ export default function NotesPage({
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2">
           <Folder size={16} className="text-muted" />
+
           <select
             value={selectedFolder ?? ''}
             onChange={(e) => {
@@ -313,6 +388,7 @@ export default function NotesPage({
           >
             <option value="">All notes</option>
             <option value={UNFILED}>Unfiled</option>
+
             {folders.map((folder) => (
               <option key={folder.id} value={folder.id}>
                 {folder.name}
@@ -329,6 +405,20 @@ export default function NotesPage({
           <Plus size={13} />
           Folder
         </button>
+
+        {selectedFolder && selectedFolder !== UNFILED && (
+          <button
+            type="button"
+            onClick={handleDeleteFolder}
+            disabled={isDeletingFolder || isFoldersLoading}
+            className="ui-btn h-9 px-3 text-small hover:text-red-700"
+            title="선택한 폴더 삭제"
+            aria-label="선택한 폴더 삭제"
+          >
+            <Trash2 size={14} />
+            {isDeletingFolder ? '삭제 중...' : '폴더 삭제'}
+          </button>
+        )}
 
         <div className="ml-auto">
           <button
@@ -355,6 +445,7 @@ export default function NotesPage({
             placeholder="Folder name"
             className="ui-input h-9 flex-1 text-small"
           />
+
           <button
             type="submit"
             disabled={!newFolderName.trim()}
@@ -362,6 +453,7 @@ export default function NotesPage({
           >
             Create
           </button>
+
           <button
             type="button"
             onClick={() => {
@@ -381,8 +473,10 @@ export default function NotesPage({
       {availableTags.length > 0 && (
         <div className="mb-4 flex flex-wrap items-center gap-1.5">
           <span className="mr-1 text-meta text-muted">Tags:</span>
+
           {availableTags.map((tag) => {
             const isActive = selectedTag === tag;
+
             return (
               <button
                 key={tag}
@@ -409,6 +503,7 @@ export default function NotesPage({
           <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
             <FileText size={32} className="text-muted opacity-40" />
             <p className="text-body text-muted">No notes found.</p>
+
             <button
               onClick={handleCreateNote}
               className="ui-btn ui-btn-primary mt-2"
@@ -420,6 +515,7 @@ export default function NotesPage({
           <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {visibleNotes.map((note) => {
               const isActive = selectedId === note.id;
+
               return (
                 <li key={note.id}>
                   <button
@@ -438,6 +534,7 @@ export default function NotesPage({
                       <h3 className="truncate text-[15px] font-semibold leading-snug text-foreground">
                         {note.title}
                       </h3>
+
                       <span
                         onClick={(e) => {
                           e.stopPropagation();
@@ -495,6 +592,7 @@ export default function NotesPage({
                 <Edit3 size={16} className="shrink-0 text-muted" />
                 <span className="truncate text-small font-bold">EDITOR</span>
               </div>
+
               <div className="flex items-center gap-0.5">
                 <button
                   type="button"
@@ -504,6 +602,7 @@ export default function NotesPage({
                 >
                   {isPreview ? <Edit3 size={15} /> : <Eye size={15} />}
                 </button>
+
                 <button
                   type="button"
                   onClick={() => void handleToggleFavorite(activeNote)}
@@ -516,6 +615,7 @@ export default function NotesPage({
                     fill={activeNote.isFavorite ? 'currentColor' : 'none'}
                   />
                 </button>
+
                 <button
                   type="button"
                   onClick={() => void handleDelete(activeNote)}
@@ -523,6 +623,7 @@ export default function NotesPage({
                 >
                   <Trash2 size={15} />
                 </button>
+
                 <button
                   type="button"
                   onClick={closeEditor}
@@ -544,6 +645,7 @@ export default function NotesPage({
                   className="ui-input flex-1 text-[15px] font-semibold"
                   placeholder="Note title"
                 />
+
                 <select
                   value={activeNote.folderId || ''}
                   onChange={(e) =>
@@ -553,6 +655,7 @@ export default function NotesPage({
                   className="ui-input h-9 bg-surface px-2.5 text-small sm:w-36"
                 >
                   <option value="">Unfiled</option>
+
                   {folders.map((folder) => (
                     <option key={folder.id} value={folder.id}>
                       {folder.name}
@@ -565,6 +668,7 @@ export default function NotesPage({
                 {(activeNote.tags || []).map((tag) => (
                   <span key={tag} className="ui-tag py-1 text-ink">
                     {tag}
+
                     <button
                       type="button"
                       onClick={() => handleRemoveTag(tag)}
@@ -574,6 +678,7 @@ export default function NotesPage({
                     </button>
                   </span>
                 ))}
+
                 <form onSubmit={handleAddTag} className="flex items-center gap-1">
                   <input
                     value={newTag}
@@ -581,6 +686,7 @@ export default function NotesPage({
                     placeholder="Add tag"
                     className="ui-input h-8 w-28 px-2 text-meta"
                   />
+
                   <button
                     type="submit"
                     disabled={!newTag.trim()}

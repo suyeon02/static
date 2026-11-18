@@ -29,22 +29,59 @@ import useQuickMemos from './hooks/useQuickMemos';
 import useHashPage from './hooks/useHashPage';
 
 const PAGE_META = {
-  dashboard: { title: 'DASHBOARD', description: '오늘의 일정, 할 일, 메모를 한눈에 확인하세요.' },
-  favorites: { title: 'FAVORITES', description: '즐겨찾기한 노트, 프로젝트, 북마크를 모아 봅니다.' },
-  notes: { title: 'NOTES', description: '폴더와 태그로 마크다운 노트를 정리하세요.' },
-  quick_memo: { title: 'QUICK_MEMO', description: '떠오른 생각을 빠르게 기록하세요.' },
-  projects: { title: 'PROJECTS', description: '프로젝트 상태와 진행률을 관리하세요.' },
-  schedule: { title: 'SCHEDULE', description: '날짜를 선택해 일정을 확인하고 추가하세요.' },
-  tasks: { title: 'TASKS', description: '할 일과 마감일을 관리하세요.' },
-  files: { title: 'FILES', description: '파일을 업로드하고 내려받으세요. 파일당 최대 10MB.' },
-  bookmarks: { title: 'BOOKMARKS', description: '자주 찾는 링크를 저장하세요.' },
-  ai_tools: { title: 'AI_TOOLS', description: '자주 쓰는 AI 도구로 바로 이동하세요.' },
-  trash: { title: 'TRASH', description: '삭제한 항목을 복원하거나 영구 삭제하세요.' },
-  backup: { title: 'BACKUP', description: '전체 데이터를 ZIP으로 백업하고 복원하세요.' },
+  dashboard: {
+    title: 'DASHBOARD',
+    description: '오늘의 일정, 할 일, 메모를 한눈에 확인하세요.',
+  },
+  favorites: {
+    title: 'FAVORITES',
+    description: '즐겨찾기한 노트, 프로젝트, 북마크를 모아 봅니다.',
+  },
+  notes: {
+    title: 'NOTES',
+    description: '폴더와 태그로 마크다운 노트를 정리하세요.',
+  },
+  quick_memo: {
+    title: 'QUICK_MEMO',
+    description: '떠오른 생각을 빠르게 기록하세요.',
+  },
+  projects: {
+    title: 'PROJECTS',
+    description: '프로젝트 상태와 진행률을 관리하세요.',
+  },
+  schedule: {
+    title: 'SCHEDULE',
+    description: '날짜를 선택해 일정을 확인하고 추가하세요.',
+  },
+  tasks: {
+    title: 'TASKS',
+    description: '할 일과 마감일을 관리하세요.',
+  },
+  files: {
+    title: 'FILES',
+    description: '파일을 업로드하고 내려받으세요. 파일당 최대 10MB.',
+  },
+  bookmarks: {
+    title: 'BOOKMARKS',
+    description: '자주 찾는 링크를 저장하세요.',
+  },
+  ai_tools: {
+    title: 'AI_TOOLS',
+    description: '자주 쓰는 AI 도구로 바로 이동하세요.',
+  },
+  trash: {
+    title: 'TRASH',
+    description: '삭제한 항목을 복원하거나 영구 삭제하세요.',
+  },
+  backup: {
+    title: 'BACKUP',
+    description: '전체 데이터를 ZIP으로 백업하고 복원하세요.',
+  },
 };
 
 const getTodayStr = () => {
   const d = new Date();
+
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
     d.getDate(),
   ).padStart(2, '0')}`;
@@ -57,6 +94,7 @@ export default function App() {
   const [selectedDate, setSelectedDate] = useState(getTodayStr());
 
   const { user, isLoading } = useAuth();
+
   const {
     memoText,
     setMemoText,
@@ -69,6 +107,7 @@ export default function App() {
     error: memosError,
     retry: retryMemos,
   } = useQuickMemos(user?.id);
+
   const {
     items: trash,
     isLoading: isTrashLoading,
@@ -78,6 +117,7 @@ export default function App() {
     emptyTrash,
     retry: retryTrash,
   } = useTrash(user?.id);
+
   const {
     events,
     isLoading: isSchedulesLoading,
@@ -87,6 +127,7 @@ export default function App() {
     deleteEvent,
     retry: retrySchedules,
   } = useScheduleEvents(user?.id, selectedDate);
+
   const {
     tasks: todos,
     isLoading: isTasksLoading,
@@ -99,11 +140,15 @@ export default function App() {
   } = useTasks(user?.id);
 
   const filteredTodos = searchQuery
-    ? todos.filter((t) => t.text.toLowerCase().includes(searchQuery.toLowerCase()))
+    ? todos.filter((t) =>
+        t.text.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
     : todos;
 
   const filteredSchedules = searchQuery
-    ? events.filter((s) => s.title.toLowerCase().includes(searchQuery.toLowerCase()))
+    ? events.filter((s) =>
+        s.title.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
     : events;
 
   const {
@@ -126,6 +171,7 @@ export default function App() {
 
   const deleteNoteToTrash = async (note) => {
     const trashItem = await addTrashItem({ ...note, type: 'NOTE' });
+
     try {
       await deleteNote(note);
     } catch (deleteError) {
@@ -142,6 +188,7 @@ export default function App() {
       createdAt: memo.createdAt,
       type: 'QUICK_MEMO',
     });
+
     try {
       await deleteQuickMemo(memo.id);
     } catch (deleteError) {
@@ -160,14 +207,20 @@ export default function App() {
           createdAt: item.itemData.createdAt || item.deletedAt,
           ifMissing: true,
         });
+
         try {
           await deleteTrashItem(item.id);
         } catch (deleteError) {
-          if (restoredMemo) await deleteQuickMemo(restoredMemo.id);
+          if (restoredMemo) {
+            await deleteQuickMemo(restoredMemo.id);
+          }
+
           throw deleteError;
         }
+
         return;
       }
+
       await deleteTrashItem(item.id);
     } catch {
       // Persistence hooks display retryable errors.
@@ -211,6 +264,7 @@ export default function App() {
     if (result.type === 'event' && result.date) {
       setSelectedDate(result.date);
     }
+
     setActiveMenu(result.target);
     setSearchQuery('');
   };
@@ -222,9 +276,11 @@ export default function App() {
       </div>
     );
   }
+
   if (!user) return <AuthPage />;
 
   const pageMeta = PAGE_META[activeMenu];
+
   const persistenceErrors = [
     { key: 'notes', message: notesError, onRetry: retryNotes },
     { key: 'trash', message: trashError, onRetry: retryTrash },
@@ -238,7 +294,8 @@ export default function App() {
   const dashTodos = filteredTodos.slice(0, 5);
 
   return (
-    <div className="min-h-screen flex bg-canvas text-ink overflow-x-hidden">
+    <div className="flex h-dvh overflow-hidden bg-canvas text-ink">
+      {/* 사이드바는 본문 스크롤 영역 밖에 유지 */}
       <Sidebar
         activeMenu={activeMenu}
         onSelectMenu={setActiveMenu}
@@ -246,20 +303,27 @@ export default function App() {
         onClose={() => setIsSidebarOpen(false)}
       />
 
-      <main className="flex min-h-0 flex-1 flex-col">
-        <Header
-          onOpenSidebar={() => setIsSidebarOpen(true)}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          searchResults={searchResults}
-          isSearchLoading={isSearchLoading}
-          searchError={searchError}
-          onSelectSearchResult={handleSelectSearchResult}
-        />
+      <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        {/* 상단 네비는 스크롤되지 않도록 유지 */}
+        <div className="shrink-0">
+          <Header
+            onOpenSidebar={() => setIsSidebarOpen(true)}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            searchResults={searchResults}
+            isSearchLoading={isSearchLoading}
+            searchError={searchError}
+            onSelectSearchResult={handleSelectSearchResult}
+          />
+        </div>
 
-        <div className="flex-1 p-4 md:p-6 overflow-y-auto">
+        {/* 오른쪽 본문 영역만 스크롤 */}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 md:p-6">
           {pageMeta && activeMenu !== 'dashboard' && (
-            <PageHeader title={pageMeta.title} description={pageMeta.description} />
+            <PageHeader
+              title={pageMeta.title}
+              description={pageMeta.description}
+            />
           )}
 
           {persistenceErrors.length > 0 && (
@@ -289,6 +353,7 @@ export default function App() {
                     onSelectDate={setSelectedDate}
                   />
                 </div>
+
                 <div>
                   <ScheduleWidget
                     schedules={dashSchedules}
@@ -299,6 +364,7 @@ export default function App() {
                     onDeleteSchedule={deleteEvent}
                   />
                 </div>
+
                 <div>
                   <TodoWidget
                     todos={dashTodos}
@@ -319,6 +385,7 @@ export default function App() {
                   onSaveMemo={createQuickMemo}
                   isLoading={areMemosLoading || Boolean(memosError)}
                 />
+
                 <AiToolsWidget compact={true} />
               </div>
             </div>
@@ -384,6 +451,7 @@ export default function App() {
                   onSelectDate={setSelectedDate}
                 />
               </div>
+
               <ScheduleWidget
                 schedules={filteredSchedules}
                 selectedDate={selectedDate}
@@ -432,7 +500,9 @@ export default function App() {
             />
           )}
 
-          {activeMenu === 'ai_tools' && <AiToolsWidget compact={false} />}
+          {activeMenu === 'ai_tools' && (
+            <AiToolsWidget compact={false} />
+          )}
 
           {activeMenu === 'trash' && (
             <TrashPage
