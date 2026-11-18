@@ -263,7 +263,8 @@ export default function BookmarksPage({ userId }) {
                     href={bookmark.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 truncate text-small font-bold hover:underline"
+                    className="flex items-center gap-2 truncate text-sx
+                     font-bold hover:underline"
                   >
                     <span className="truncate">{bookmark.title}</span>
                     <ExternalLink size={12} className="shrink-0" />

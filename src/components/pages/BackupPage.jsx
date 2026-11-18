@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Archive, Download, FileUp, LoaderCircle } from 'lucide-react';
+import { Archive, Download, FileUp, LoaderCircle, CloudUpload } from 'lucide-react';
 import { createBackupZip, restoreBackupZip } from '../../lib/backup';
 import { getLocalizedErrorMessage } from '../../lib/userFacingError';
 import CardHeader from '../common/CardHeader';
@@ -41,6 +41,7 @@ export default function BackupPage({
   const [progress, setProgress] = useState({});
   const [operationError, setOperationError] = useState('');
   const [completedAction, setCompletedAction] = useState('');
+  const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef(null);
 
   const updateProgress = (category, next) => {
@@ -111,74 +112,116 @@ export default function BackupPage({
     }
   };
 
+  const handleFileDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      if (!file.name.endsWith('.zip')) {
+        alert('ZIP 파일만 업로드할 수 있습니다.');
+        return;
+      }
+      setBackupFile(file);
+      setProgress({});
+      setOperationError('');
+      setCompletedAction('');
+    }
+  };
+
   const isBusy = Boolean(busyAction);
 
   return (
     <div className="max-w-3xl space-y-6">
       <SwipePanels labels={['BACKUP', 'RESTORE']} label="Backup sections">
-      <section className="ui-card space-y-4">
-        <CardHeader title="FULL DATA BACKUP" icon={Archive} />
-        <p className="text-small leading-relaxed text-muted">
-          현재 로그인한 계정의 노트, 폴더, 할 일, 일정, 프로젝트, 북마크,
-          휴지통, 메모와 업로드한 모든 파일을 원래 파일명 그대로 ZIP 파일 하나에
-          담아 내려받습니다.
-        </p>
-        <button
-          type="button"
-          onClick={handleCreateBackup}
-          disabled={isBusy}
-          className="ui-btn ui-btn-primary"
-        >
-          {busyAction === 'export' ? (
-            <LoaderCircle size={14} className="animate-spin" />
-          ) : (
-            <Download size={14} />
-          )}
-          {busyAction === 'export' ? 'CREATING ZIP…' : 'DOWNLOAD ZIP BACKUP'}
-        </button>
-      </section>
-
-      <section className="ui-card space-y-4">
-        <CardHeader title="RESTORE FROM ZIP" icon={FileUp} />
-        <p className="text-small leading-relaxed text-muted">
-          복원은 병합 방식으로 진행되며, 기존 데이터와 파일이 항상 우선합니다.
-          ID가 같은 항목이나 경로가 같은 파일은 덮어쓰지 않고 건너뜁니다. 폴더를
-          노트보다 먼저 가져오며, 복원한 데이터는 현재 로그인한 계정에
-          저장됩니다.
-        </p>
-        <label className="block space-y-1.5 text-small font-bold">
-          STATIC 백업 ZIP 파일
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".zip,application/zip"
+        <section className="ui-card space-y-4">
+          <CardHeader title="전체 데이터 백업" icon={Archive} />
+          <p className="text-small leading-relaxed text-muted">
+            현재 로그인한 계정의 노트, 폴더, 할 일, 일정, 프로젝트, 북마크,
+            휴지통, 메모와 업로드한 모든 파일을 원래 파일명 그대로 ZIP 파일 하나에
+            담아 내려받습니다.
+          </p>
+          <button
+            type="button"
+            onClick={handleCreateBackup}
             disabled={isBusy}
-            onChange={(event) => {
-              setBackupFile(event.target.files?.[0] || null);
-              setProgress({});
-              setOperationError('');
-              setCompletedAction('');
-            }}
-            className="w-full cursor-pointer rounded border border-line bg-subtle px-2 py-1.5 text-small font-normal file:mr-3 file:h-7 file:cursor-pointer file:rounded file:border-0 file:bg-ink file:px-3 file:text-meta file:font-bold file:text-white disabled:cursor-not-allowed disabled:opacity-40"
-          />
-        </label>
-        {backupFile && (
-          <p className="text-meta text-muted">{backupFile.name}</p>
-        )}
-        <button
-          type="button"
-          onClick={handleRestore}
-          disabled={!backupFile || isBusy}
-          className="ui-btn ui-btn-secondary"
-        >
-          {busyAction === 'restore' ? (
-            <LoaderCircle size={14} className="animate-spin" />
-          ) : (
-            <FileUp size={14} />
-          )}
-          {busyAction === 'restore' ? 'RESTORING…' : 'RESTORE & MERGE'}
-        </button>
-      </section>
+            className="ui-btn ui-btn-primary"
+          >
+            {busyAction === 'export' ? (
+              <LoaderCircle size={14} className="animate-spin" />
+            ) : (
+              <Download size={14} />
+            )}
+            {busyAction === 'export' ? 'CREATING ZIP…' : 'DOWNLOAD ZIP BACKUP'}
+          </button>
+        </section>
+
+        <section className="ui-card space-y-4">
+          <CardHeader title="ZIP 파일에서 복원" icon={FileUp} />
+          
+          {/* 안내 박스 (기존 프로젝트 톤앤매너 적용) */}
+          <div className="rounded border border-line-soft bg-subtle p-3 text-small leading-relaxed text-muted">
+            복원은 <strong className="text-ink font-bold">병합 방식</strong>으로 진행되며, 기존 데이터와 파일이 항상 우선합니다. ID가 같은 항목이나 경로가 같은 파일은 덮어쓰지 않고 건너뜁니다. 폴더를 노트보다 먼저 가져오며, 복원한 데이터는 현재 로그인한 계정에 저장됩니다.
+          </div>
+
+          {/* 드래그 앤 드롭 파일 업로드 영역 */}
+          <div>
+            <div
+              onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+              onDragLeave={() => setIsDragOver(false)}
+              onDrop={handleFileDrop}
+              onClick={() => fileInputRef.current?.click()}
+              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all ${
+                isDragOver ? 'border-ink bg-subtle' : 'border-line bg-canvas hover:border-ink/50'
+              }`}
+            >
+              {!backupFile ? (
+                <>
+                  <div className="flex justify-center text-ink mb-2">
+                    <CloudUpload size={28} />
+                  </div>
+                  <div className="text-small font-bold text-ink mb-1">
+                    STATIC 백업 ZIP 파일을 여기에 드래그하거나 클릭하여 선택하세요.
+                  </div>
+                  <div className="text-meta text-muted">지원 형식: .zip (최대 500MB)</div>
+                </>
+              ) : (
+                <div className="text-small font-bold text-ink">
+                  ✅ {backupFile.name}
+                </div>
+              )}
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".zip,application/zip"
+                disabled={isBusy}
+                className="hidden"
+                onChange={(event) => {
+                  setBackupFile(event.target.files?.[0] || null);
+                  setProgress({});
+                  setOperationError('');
+                  setCompletedAction('');
+                }}
+              />
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleRestore}
+            disabled={!backupFile || isBusy}
+            className="ui-btn ui-btn-secondary"
+          >
+            {busyAction === 'restore' ? (
+              <LoaderCircle size={14} className="animate-spin" />
+            ) : (
+              <FileUp size={14} />
+            )}
+            {busyAction === 'restore' ? 'RESTORING…' : 'RESTORE & MERGE'}
+          </button>
+        </section>
       </SwipePanels>
 
       {(completedAction || operationError || Object.keys(progress).length > 0) && (
