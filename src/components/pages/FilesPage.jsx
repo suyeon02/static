@@ -1,10 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Download, FileUp, LoaderCircle, Trash2 } from 'lucide-react';
+import { Download, FileUp, LoaderCircle, Trash2, File } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getLocalizedErrorMessage } from '../../lib/userFacingError';
 import CardHeader from '../common/CardHeader';
-import SwipePanels from '../common/SwipePanels';
-import useSwipePanels from '../../hooks/useSwipePanels';
 import ErrorAlert from '../common/ErrorAlert';
 
 const BUCKET = 'my-desk-files';
@@ -115,9 +113,6 @@ export default function FilesPage({ userId }) {
     setRetryAction(null);
   };
 
-  const panels = useSwipePanels();
-  const { goToPanel } = panels;
-
   const handleUpload = async (event) => {
     event.preventDefault();
     if (!selectedFile) return;
@@ -148,7 +143,6 @@ export default function FilesPage({ userId }) {
         setSelectedFile(null);
         if (fileInputRef.current) fileInputRef.current.value = '';
         setLoadAttempt((attempt) => attempt + 1);
-        goToPanel(1);
       } catch (uploadError) {
         setError(`파일 업로드에 실패했습니다. ${getErrorMessage(uploadError)}`);
         setRetryAction(() => upload);
@@ -234,85 +228,104 @@ export default function FilesPage({ userId }) {
   };
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="w-full space-y-6">
       <ErrorAlert message={error} onRetry={retryAction ? handleRetry : undefined} />
-      <SwipePanels labels={['UPLOAD', 'FILES']} label="Files sections" controller={panels}>
-      <form
-        onSubmit={handleUpload}
-        className="ui-card space-y-4"
-      >
+
+      {/* Upload */}
+      <form onSubmit={handleUpload} className="ui-card space-y-4 p-5">
         <CardHeader title="UPLOAD FILE" icon={FileUp} />
-        <label className="block space-y-1.5 text-small font-bold">
-          파일 (최대 10MB)
-          <input
-            ref={fileInputRef}
-            type="file"
-            onChange={(event) => {
-              setSelectedFile(event.target.files?.[0] || null);
-              clearError();
-            }}
-            className="w-full cursor-pointer rounded border border-line bg-subtle px-2 py-1.5 text-small font-normal file:mr-3 file:h-7 file:cursor-pointer file:rounded file:border-0 file:bg-ink file:px-3 file:text-meta file:font-bold file:text-white disabled:cursor-not-allowed disabled:opacity-40"
-          />
-        </label>
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <label className="block min-w-0 flex-1">
+            <input
+              ref={fileInputRef}
+              type="file"
+              onChange={(event) => {
+                setSelectedFile(event.target.files?.[0] || null);
+                clearError();
+              }}
+              className="w-full cursor-pointer rounded border border-line bg-subtle px-3 py-2 text-small font-normal file:mr-3 file:h-7 file:cursor-pointer file:rounded file:border-0 file:bg-ink file:px-3 file:text-meta file:font-bold file:text-white disabled:cursor-not-allowed disabled:opacity-40"
+            />
+          </label>
+
+          <button
+            type="submit"
+            disabled={!selectedFile || isUploading || isLoading}
+            className="ui-btn ui-btn-primary h-10 shrink-0 px-5 w-full sm:w-auto"
+          >
+            {isUploading ? (
+              <>
+                <LoaderCircle size={14} className="animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              <>
+                <FileUp size={14} />
+                Upload
+              </>
+            )}
+          </button>
+        </div>
+
         {selectedFile && (
           <p className="text-meta text-muted">
             {selectedFile.name} · {formatFileSize(selectedFile.size)}
           </p>
         )}
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={!selectedFile || isUploading || isLoading}
-            className="ui-btn ui-btn-primary"
-          >
-            {isUploading ? (
-              <LoaderCircle size={13} className="animate-spin" />
-            ) : (
-              <FileUp size={13} />
-            )}
-            {isUploading ? 'UPLOADING...' : 'UPLOAD'}
-          </button>
-        </div>
       </form>
 
-      <section className="ui-card">
-        <CardHeader title={`FILES (${files.length})`} />
+      {/* Files list */}
+      <section className="w-full">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-small font-bold tracking-wide text-muted">
+            FILES ({files.length})
+          </h2>
+        </div>
+
         {isLoading ? (
-          <p className="ui-empty">
-            Loading files...
-          </p>
+          <div className="ui-card py-14 text-center">
+            <p className="ui-empty">Loading files...</p>
+          </div>
         ) : files.length === 0 ? (
-          <p className="ui-empty">
-            No files yet.
-          </p>
+          <div className="ui-card flex flex-col items-center justify-center gap-3 py-16 text-center">
+            <File size={28} className="text-muted opacity-40" />
+            <p className="ui-empty">No files yet.</p>
+          </div>
         ) : (
-          <ul className="divide-y divide-line-soft">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {files.map((file) => (
               <li
                 key={file.path}
-                className="flex items-center justify-between gap-4 py-3"
+                className="ui-card group flex items-center gap-3 p-4 transition-shadow hover:shadow-md"
               >
-                <div className="min-w-0">
-                  <p className="truncate text-small font-bold">{file.name}</p>
-                  <p className="mt-1 text-meta text-muted">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-subtle text-muted">
+                  <File size={16} />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[15px] font-semibold leading-snug">
+                    {file.name}
+                  </p>
+                  <p className="mt-1 truncate text-meta text-muted">
                     {formatFileSize(file.size)}
                     {file.createdAt &&
                       ` · ${new Date(file.createdAt).toLocaleString()}`}
                   </p>
                 </div>
-                <div className="flex shrink-0 items-center gap-1">
+
+                <div className="flex shrink-0 items-center gap-0.5">
                   <button
                     type="button"
                     onClick={() => handleDownload(file)}
                     disabled={downloadingPath !== null || deletingPath !== null}
                     aria-label={`Download ${file.name}`}
                     title="Download file"
-                    className="ui-icon-btn"
+                    className="ui-icon-btn text-muted hover:text-foreground"
                   >
                     {downloadingPath === file.path ? (
-                      <LoaderCircle size={14} className="animate-spin" />
+                      <LoaderCircle size={15} className="animate-spin" />
                     ) : (
-                      <Download size={14} />
+                      <Download size={15} />
                     )}
                   </button>
                   <button
@@ -321,12 +334,12 @@ export default function FilesPage({ userId }) {
                     disabled={deletingPath !== null || downloadingPath !== null}
                     aria-label={`Delete ${file.name}`}
                     title="Delete file"
-                    className="ui-icon-btn"
+                    className="ui-icon-btn text-muted hover:text-destructive"
                   >
                     {deletingPath === file.path ? (
-                      <LoaderCircle size={14} className="animate-spin" />
+                      <LoaderCircle size={15} className="animate-spin" />
                     ) : (
-                      <Trash2 size={14} />
+                      <Trash2 size={15} />
                     )}
                   </button>
                 </div>
@@ -335,7 +348,6 @@ export default function FilesPage({ userId }) {
           </ul>
         )}
       </section>
-      </SwipePanels>
     </div>
   );
 }

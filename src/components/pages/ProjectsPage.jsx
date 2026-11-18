@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Star, Trash2 } from 'lucide-react';
+import { FolderKanban, Plus, Star, Trash2 } from 'lucide-react';
 
 const STATUS_OPTIONS = ['TODO', 'IN_PROGRESS', 'DONE'];
 
@@ -42,10 +42,11 @@ export default function ProjectsPage({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="w-full space-y-6">
+      {/* Create form */}
       <form
         onSubmit={addProject}
-        className="ui-card flex flex-wrap gap-2 p-4"
+        className="ui-card flex flex-col gap-3 p-5 sm:flex-row sm:items-center"
       >
         <input
           type="text"
@@ -53,117 +54,136 @@ export default function ProjectsPage({
           onChange={(e) => setTag(e.target.value)}
           placeholder="TAG"
           aria-label="Project tag"
-          className="ui-input w-24 font-bold uppercase"
+          className="ui-input h-10 w-full font-bold uppercase sm:w-24"
           disabled={!isReady}
         />
         <input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="+ New project name..."
+          placeholder="New project name..."
           aria-label="Project name"
-          className="ui-input flex-1 min-w-[200px] text-body"
+          className="ui-input h-10 min-w-0 flex-1 text-body"
           disabled={!isReady}
         />
         <button
           type="submit"
-          disabled={!isReady}
-          className="ui-btn ui-btn-primary px-4"
+          disabled={!isReady || !title.trim()}
+          className="ui-btn ui-btn-primary h-10 shrink-0 px-5 w-full sm:w-auto"
         >
-          <Plus size={14} /> CREATE
+          <Plus size={14} />
+          Create
         </button>
       </form>
 
+      {/* List */}
       {isLoading ? (
-        <p className="ui-empty">
-          프로젝트를 불러오는 중...
-        </p>
+        <div className="ui-card py-14 text-center">
+          <p className="ui-empty">프로젝트를 불러오는 중...</p>
+        </div>
       ) : projects.length === 0 ? (
-        <p className="ui-empty">
-          등록된 프로젝트가 없습니다.
-        </p>
-      ) : null}
+        <div className="ui-card flex flex-col items-center justify-center gap-3 py-16 text-center">
+          <FolderKanban size={28} className="text-muted opacity-40" />
+          <p className="ui-empty">등록된 프로젝트가 없습니다.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {projects.map((proj) => (
+            <div
+              key={proj.id}
+              className="ui-card flex flex-col justify-between gap-4 p-5 transition-shadow hover:shadow-md"
+            >
+              {/* Header */}
+              <div>
+                <div className="mb-3 flex items-center justify-between gap-2">
+                  <span className="ui-tag">{proj.tag}</span>
+                  <div className="-mr-1 flex items-center">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        void onUpdateProject(proj.id, {
+                          is_favorite: !proj.isFavorite,
+                        })
+                      }
+                      aria-label={`${proj.isFavorite ? 'Remove' : 'Add'} ${proj.title} ${proj.isFavorite ? 'from' : 'to'} favorites`}
+                      aria-pressed={proj.isFavorite}
+                      title={
+                        proj.isFavorite
+                          ? 'Remove from favorites'
+                          : 'Add to favorites'
+                      }
+                      className={`ui-icon-btn ${
+                        proj.isFavorite
+                          ? 'text-amber-500 hover:text-amber-600'
+                          : 'text-muted hover:text-amber-500'
+                      }`}
+                      disabled={!isReady}
+                    >
+                      <Star
+                        size={14}
+                        fill={proj.isFavorite ? 'currentColor' : 'none'}
+                      />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void onDeleteProject(proj.id)}
+                      className="ui-icon-btn text-muted hover:text-destructive"
+                      disabled={!isReady}
+                      aria-label={`Delete ${proj.title}`}
+                      title="Delete project"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {projects.map((proj) => (
-          <div
-            key={proj.id}
-            className="ui-card flex flex-col justify-between gap-4"
-          >
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="ui-tag">
-                  {proj.tag}
-                </span>
-                <div className="-mr-2 flex items-center gap-0.5">
+                <h3 className="mb-4 text-[15px] font-semibold leading-snug break-words">
+                  {proj.title}
+                </h3>
+
+                {/* Progress */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-meta font-bold tabular-nums text-muted">
+                    <span>PROGRESS</span>
+                    <span className="text-ink">{proj.progress}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="10"
+                    value={proj.progress}
+                    onChange={(e) => updateProgress(proj.id, e.target.value)}
+                    disabled={!isReady}
+                    aria-label={`${proj.title} progress`}
+                    className="w-full cursor-pointer accent-ink"
+                  />
+                </div>
+              </div>
+
+              {/* Status */}
+              <div className="flex gap-1 border-t border-line-soft pt-3">
+                {STATUS_OPTIONS.map((st) => (
                   <button
+                    key={st}
                     type="button"
-                    onClick={() =>
-                      void onUpdateProject(proj.id, {
-                        is_favorite: !proj.isFavorite,
-                      })
-                    }
-                    aria-label={`${proj.isFavorite ? 'Remove' : 'Add'} ${proj.title} ${proj.isFavorite ? 'from' : 'to'} favorites`}
-                    aria-pressed={proj.isFavorite}
-                    title={proj.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-                    className={`ui-icon-btn ${
-                      proj.isFavorite ? 'text-amber-500 hover:text-amber-600' : ''
+                    onClick={() => updateStatus(proj.id, st)}
+                    disabled={!isReady}
+                    aria-pressed={proj.status === st}
+                    className={`ui-segment flex-1 ${
+                      proj.status === st
+                        ? 'ui-segment-active'
+                        : 'ui-segment-idle'
                     }`}
-                    disabled={!isReady}
                   >
-                    <Star size={14} fill={proj.isFavorite ? 'currentColor' : 'none'} />
+                    {st}
                   </button>
-                  <button
-                    onClick={() => void onDeleteProject(proj.id)}
-                    className="ui-icon-btn"
-                    disabled={!isReady}
-                    aria-label={`Delete ${proj.title}`}
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              </div>
-              <h3 className="mb-4 text-title font-bold break-words">{proj.title}</h3>
-
-              {/* 진행률 바 */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-meta font-bold text-muted tabular-nums">
-                  <span>PROGRESS</span>
-                  <span className="text-ink">{proj.progress}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  step="10"
-                  value={proj.progress}
-                  onChange={(e) => updateProgress(proj.id, e.target.value)}
-                  disabled={!isReady}
-                  aria-label={`${proj.title} progress`}
-                  className="w-full accent-ink cursor-pointer"
-                />
+                ))}
               </div>
             </div>
-
-            <div className="flex gap-1 border-t border-line-soft pt-3">
-              {STATUS_OPTIONS.map((st) => (
-                <button
-                  key={st}
-                  onClick={() => updateStatus(proj.id, st)}
-                  disabled={!isReady}
-                  type="button"
-                  aria-pressed={proj.status === st}
-                  className={`ui-segment flex-1 ${
-                    proj.status === st ? 'ui-segment-active' : 'ui-segment-idle'
-                  }`}
-                >
-                  {st}
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

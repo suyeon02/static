@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { BookmarkPlus, ExternalLink, Plus, Star, Trash2 } from 'lucide-react';
+import { Bookmark, BookmarkPlus, ExternalLink, Plus, Star, Trash2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getLocalizedErrorMessage } from '../../lib/userFacingError';
 import CardHeader from '../common/CardHeader';
-import SwipePanels from '../common/SwipePanels';
-import useSwipePanels from '../../hooks/useSwipePanels';
 import ErrorAlert from '../common/ErrorAlert';
 
 const BOOKMARK_COLUMNS = 'id, title, url, created_at, is_favorite';
@@ -61,7 +59,9 @@ export default function BookmarksPage({ userId }) {
       if (!isCurrent) return;
 
       if (loadError) {
-        setError(`북마크를 불러오지 못했습니다. ${getLocalizedErrorMessage(loadError, '다시 시도해 주세요.')}`);
+        setError(
+          `북마크를 불러오지 못했습니다. ${getLocalizedErrorMessage(loadError, '다시 시도해 주세요.')}`,
+        );
         setRetryAction(() => () => setLoadAttempt((attempt) => attempt + 1));
       } else {
         setBookmarks(data);
@@ -82,9 +82,6 @@ export default function BookmarksPage({ userId }) {
       isCurrent = false;
     };
   }, [userId, loadAttempt]);
-
-  const panels = useSwipePanels();
-  const { goToPanel } = panels;
 
   const handleAdd = async (event) => {
     event.preventDefault();
@@ -116,7 +113,6 @@ export default function BookmarksPage({ userId }) {
         setBookmarks((current) => [data, ...current]);
         setTitle('');
         setUrl('');
-        goToPanel(1);
       } catch (saveError) {
         setError(
           `북마크를 저장하지 못했습니다. ${getLocalizedErrorMessage(saveError, '다시 시도해 주세요.')}`,
@@ -197,94 +193,103 @@ export default function BookmarksPage({ userId }) {
   };
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="w-full space-y-6">
       <ErrorAlert message={error} onRetry={retryAction ? handleRetry : undefined} />
-      <SwipePanels labels={['ADD', 'BOOKMARKS']} label="Bookmarks sections" controller={panels}>
+
+      {/* Add form */}
       <form
         onSubmit={handleAdd}
-        className="ui-card space-y-4"
+        className="ui-card space-y-4 p-5"
       >
         <CardHeader title="ADD BOOKMARK" icon={BookmarkPlus} />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <label className="space-y-1.5 text-small font-bold">
-            TITLE
-            <input
-              type="text"
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder="Bookmark title"
-              required
-              className="ui-input font-normal"
-            />
-          </label>
-          <label className="space-y-1.5 text-small font-bold">
-            URL
-            <input
-              type="text"
-              inputMode="url"
-              value={url}
-              onChange={(event) => setUrl(event.target.value)}
-              placeholder="https://example.com"
-              required
-              className="ui-input font-normal"
-            />
-          </label>
-        </div>
-        <div className="flex justify-end">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <input
+            type="text"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder="Bookmark title"
+            required
+            className="ui-input w-full sm:flex-1 font-normal h-11"
+          />
+          <input
+            type="text"
+            inputMode="url"
+            value={url}
+            onChange={(event) => setUrl(event.target.value)}
+            placeholder="https://example.com"
+            required
+            className="ui-input w-full sm:flex-[1.6] font-normal h-11 min-w-0"
+          />
           <button
             type="submit"
             disabled={isAdding || isLoading}
-            className="ui-btn ui-btn-primary"
+            className="ui-btn ui-btn-primary shrink-0 h-11 px-5 w-full sm:w-auto"
           >
-            <Plus size={13} /> ADD BOOKMARK
+            <Plus size={14} strokeWidth={2.5} />
+            Add
           </button>
         </div>
       </form>
 
-      <section className="ui-card">
-        <CardHeader title={`BOOKMARKS (${bookmarks.length})`} />
+      {/* Bookmarks grid */}
+      <section className="w-full">
         {isLoading ? (
-          <p className="ui-empty">
-            Loading bookmarks...
-          </p>
+          <p className="ui-empty py-12 text-center">Loading bookmarks...</p>
         ) : bookmarks.length === 0 ? (
-          <p className="ui-empty">
-            No bookmarks yet.
-          </p>
+          <div className="ui-card py-16 text-center">
+            <Bookmark size={28} className="mx-auto mb-3 text-muted opacity-40" />
+            <p className="ui-empty">No bookmarks yet.</p>
+          </div>
         ) : (
-          <ul className="divide-y divide-line-soft">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
             {bookmarks.map((bookmark) => (
               <li
                 key={bookmark.id}
-                className="flex items-center justify-between gap-4 py-3"
+                className="ui-card group flex items-start gap-3 p-4 w-full transition-shadow hover:shadow-md"
               >
-                <div className="min-w-0">
+                <div className="mt-0.5 shrink-0 text-muted">
+                  <Bookmark size={16} />
+                </div>
+
+                <div className="min-w-0 flex-1">
                   <a
                     href={bookmark.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 truncate text-sx
-                     font-bold hover:underline"
+                    className="inline-flex items-center gap-1.5 font-semibold text-foreground hover:underline truncate max-w-full"
                   >
                     <span className="truncate">{bookmark.title}</span>
-                    <ExternalLink size={12} className="shrink-0" />
+                    <ExternalLink
+                      size={12}
+                      className="shrink-0 opacity-0 group-hover:opacity-60 transition-opacity"
+                    />
                   </a>
-                  <p className="mt-1 truncate text-meta text-muted">
+                  <p className="mt-1 truncate text-sm text-muted">
                     {bookmark.url}
                   </p>
                 </div>
-                <div className="flex shrink-0 items-center">
+
+                <div className="flex shrink-0 items-center gap-0.5 -mr-1">
                   <button
                     type="button"
                     onClick={() => void handleToggleFavorite(bookmark)}
                     aria-label={`${bookmark.is_favorite ? 'Remove' : 'Add'} ${bookmark.title} ${bookmark.is_favorite ? 'from' : 'to'} favorites`}
                     aria-pressed={bookmark.is_favorite}
-                    title={bookmark.is_favorite ? 'Remove from favorites' : 'Add to favorites'}
+                    title={
+                      bookmark.is_favorite
+                        ? 'Remove from favorites'
+                        : 'Add to favorites'
+                    }
                     className={`ui-icon-btn ${
-                      bookmark.is_favorite ? 'text-amber-500 hover:text-amber-600' : ''
+                      bookmark.is_favorite
+                        ? 'text-amber-500 hover:text-amber-600'
+                        : 'text-muted hover:text-foreground'
                     }`}
                   >
-                    <Star size={14} fill={bookmark.is_favorite ? 'currentColor' : 'none'} />
+                    <Star
+                      size={15}
+                      fill={bookmark.is_favorite ? 'currentColor' : 'none'}
+                    />
                   </button>
                   <button
                     type="button"
@@ -292,9 +297,9 @@ export default function BookmarksPage({ userId }) {
                     disabled={deletingId !== null}
                     aria-label={`Delete ${bookmark.title}`}
                     title="Delete bookmark"
-                    className="ui-icon-btn"
+                    className="ui-icon-btn text-muted hover:text-destructive"
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={15} />
                   </button>
                 </div>
               </li>
@@ -302,7 +307,6 @@ export default function BookmarksPage({ userId }) {
           </ul>
         )}
       </section>
-      </SwipePanels>
     </div>
   );
 }

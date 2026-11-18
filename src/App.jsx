@@ -5,8 +5,8 @@ import CalendarWidget from './components/widgets/CalendarWidget';
 import ScheduleWidget from './components/widgets/ScheduleWidget';
 import TodoWidget from './components/widgets/TodoWidget';
 import AiToolsWidget from './components/widgets/AiToolsWidget';
-import RecentWidget from './components/widgets/RecentWidget';
 import MemoWidget from './components/widgets/MemoWidget';
+import WeatherWidget from './components/widgets/WeatherWidget';
 import NotesPage from './components/pages/NotesPage';
 import QuickMemoPage from './components/pages/QuickMemoPage';
 import ProjectsPage from './components/pages/ProjectsPage';
@@ -17,16 +17,16 @@ import BackupPage from './components/pages/BackupPage';
 import TrashPage from './components/pages/TrashPage';
 import PageHeader from './components/common/PageHeader';
 import ErrorAlert from './components/common/ErrorAlert';
-import AuthPage from './components/AuthPage'
-import { useAuth } from './contexts/AuthContext'
-import useNotes from './hooks/useNotes'
-import useTasks from './hooks/useTasks'
-import useScheduleEvents from './hooks/useScheduleEvents'
-import useProjects from './hooks/useProjects'
-import useUnifiedSearch from './hooks/useUnifiedSearch'
-import useTrash from './hooks/useTrash'
-import useQuickMemos from './hooks/useQuickMemos'
-import useHashPage from './hooks/useHashPage'
+import AuthPage from './components/AuthPage';
+import { useAuth } from './contexts/AuthContext';
+import useNotes from './hooks/useNotes';
+import useTasks from './hooks/useTasks';
+import useScheduleEvents from './hooks/useScheduleEvents';
+import useProjects from './hooks/useProjects';
+import useUnifiedSearch from './hooks/useUnifiedSearch';
+import useTrash from './hooks/useTrash';
+import useQuickMemos from './hooks/useQuickMemos';
+import useHashPage from './hooks/useHashPage';
 
 const PAGE_META = {
   dashboard: { title: 'DASHBOARD', description: '오늘의 일정, 할 일, 메모를 한눈에 확인하세요.' },
@@ -46,7 +46,7 @@ const PAGE_META = {
 const getTodayStr = () => {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
-    d.getDate()
+    d.getDate(),
   ).padStart(2, '0')}`;
 };
 
@@ -56,7 +56,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDate, setSelectedDate] = useState(getTodayStr());
 
-  const { user, isLoading } = useAuth()
+  const { user, isLoading } = useAuth();
   const {
     memoText,
     setMemoText,
@@ -68,7 +68,7 @@ export default function App() {
     isLoading: areMemosLoading,
     error: memosError,
     retry: retryMemos,
-  } = useQuickMemos(user?.id)
+  } = useQuickMemos(user?.id);
   const {
     items: trash,
     isLoading: isTrashLoading,
@@ -77,7 +77,7 @@ export default function App() {
     deleteItem: deleteTrashItem,
     emptyTrash,
     retry: retryTrash,
-  } = useTrash(user?.id)
+  } = useTrash(user?.id);
   const {
     events,
     isLoading: isSchedulesLoading,
@@ -86,7 +86,7 @@ export default function App() {
     createEvent,
     deleteEvent,
     retry: retrySchedules,
-  } = useScheduleEvents(user?.id, selectedDate)
+  } = useScheduleEvents(user?.id, selectedDate);
   const {
     tasks: todos,
     isLoading: isTasksLoading,
@@ -96,34 +96,33 @@ export default function App() {
     toggleTask,
     deleteTask,
     retry: retryTasks,
-  } = useTasks(user?.id)
+  } = useTasks(user?.id);
+
   const filteredTodos = searchQuery
     ? todos.filter((t) => t.text.toLowerCase().includes(searchQuery.toLowerCase()))
     : todos;
 
   const filteredSchedules = searchQuery
-    ? events.filter((s) =>
-        s.title.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+    ? events.filter((s) => s.title.toLowerCase().includes(searchQuery.toLowerCase()))
     : events;
 
-    const {
-      notes,
-      isLoading: isNotesLoading,
-      error: notesError,
-      createNote,
-      updateNote,
-      setNoteFavorite,
-      deleteNote,
-      retry: retryNotes,
-      folders,
-      isFoldersLoading,
-      foldersError,
-      createFolder,
-      renameFolder,
-      deleteFolder,
-      retryFolders,
-    } = useNotes(user?.id)
+  const {
+    notes,
+    isLoading: isNotesLoading,
+    error: notesError,
+    createNote,
+    updateNote,
+    setNoteFavorite,
+    deleteNote,
+    retry: retryNotes,
+    folders,
+    isFoldersLoading,
+    foldersError,
+    createFolder,
+    renameFolder,
+    deleteFolder,
+    retryFolders,
+  } = useNotes(user?.id);
 
   const deleteNoteToTrash = async (note) => {
     const trashItem = await addTrashItem({ ...note, type: 'NOTE' });
@@ -190,6 +189,7 @@ export default function App() {
       // The trash hook displays the persistence error.
     }
   };
+
   const {
     projects,
     isLoading: isProjectsLoading,
@@ -199,12 +199,13 @@ export default function App() {
     updateProject,
     deleteProject,
     retry: retryProjects,
-  } = useProjects(user?.id)
+  } = useProjects(user?.id);
+
   const {
     results: searchResults,
     isLoading: isSearchLoading,
     error: searchError,
-  } = useUnifiedSearch(user?.id, searchQuery)
+  } = useUnifiedSearch(user?.id, searchQuery);
 
   const handleSelectSearchResult = (result) => {
     if (result.type === 'event' && result.date) {
@@ -233,8 +234,11 @@ export default function App() {
     { key: 'projects', message: projectsError, onRetry: retryProjects },
   ].filter((item) => item.message);
 
+  const dashSchedules = filteredSchedules.slice(0, 4);
+  const dashTodos = filteredTodos.slice(0, 5);
+
   return (
-    <div className="min-h-screen md:h-screen flex bg-canvas text-ink overflow-x-hidden md:overflow-hidden">
+    <div className="min-h-screen flex bg-canvas text-ink overflow-x-hidden">
       <Sidebar
         activeMenu={activeMenu}
         onSelectMenu={setActiveMenu}
@@ -242,7 +246,7 @@ export default function App() {
         onClose={() => setIsSidebarOpen(false)}
       />
 
-      <main className="flex-1 min-w-0 flex flex-col h-full">
+      <main className="flex min-h-0 flex-1 flex-col">
         <Header
           onOpenSidebar={() => setIsSidebarOpen(true)}
           searchQuery={searchQuery}
@@ -253,54 +257,70 @@ export default function App() {
           onSelectSearchResult={handleSelectSearchResult}
         />
 
-        <div
-          className={`flex-1 overflow-y-auto p-4 md:p-8 ${
-            activeMenu === 'schedule' ? 'flex flex-col' : ''
-          }`}
-        >
-          {pageMeta && (
+        <div className="flex-1 p-4 md:p-6 overflow-y-auto">
+          {pageMeta && activeMenu !== 'dashboard' && (
             <PageHeader title={pageMeta.title} description={pageMeta.description} />
           )}
+
           {persistenceErrors.length > 0 && (
-            <div className="mb-6 space-y-2">
+            <div className="mb-4 space-y-2">
               {persistenceErrors.map((item) => (
-                <ErrorAlert key={item.key} message={item.message} onRetry={item.onRetry} />
+                <ErrorAlert
+                  key={item.key}
+                  message={item.message}
+                  onRetry={item.onRetry}
+                />
               ))}
             </div>
           )}
+
           {activeMenu === 'dashboard' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <CalendarWidget
-                selectedDate={selectedDate}
-                onSelectDate={setSelectedDate}
-              />
-              <ScheduleWidget
-                schedules={filteredSchedules}
-                selectedDate={selectedDate}
-                isLoading={isSchedulesLoading}
-                isReady={areSchedulesReady}
-                onCreateSchedule={createEvent}
-                onDeleteSchedule={deleteEvent}
-              />
-              <TodoWidget
-                todos={filteredTodos}
-                isLoading={isTasksLoading}
-                isReady={areTasksReady}
-                onCreateTodo={createTask}
-                onToggleTodo={toggleTask}
-                onDeleteTodo={deleteTask}
-              />
-              <AiToolsWidget />
-              <RecentWidget
-                recentDocs={notes.slice(0, 4)}
-                onSelectDoc={() => setActiveMenu('notes')}
-              />
-              <MemoWidget
-                memoText={memoText}
-                setMemoText={setMemoText}
-                onSaveMemo={createQuickMemo}
-                isLoading={areMemosLoading || Boolean(memosError)}
-              />
+            <div className="flex flex-col gap-4 pb-6">
+              {/* 상단: 날씨 메트릭 바 */}
+              <div>
+                <WeatherWidget />
+              </div>
+
+              {/* 중단: 캘린더 | 일정 | 할 일 */}
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-[280px_1fr_1fr]">
+                <div>
+                  <CalendarWidget
+                    selectedDate={selectedDate}
+                    onSelectDate={setSelectedDate}
+                  />
+                </div>
+                <div>
+                  <ScheduleWidget
+                    schedules={dashSchedules}
+                    selectedDate={selectedDate}
+                    isLoading={isSchedulesLoading}
+                    isReady={areSchedulesReady}
+                    onCreateSchedule={createEvent}
+                    onDeleteSchedule={deleteEvent}
+                  />
+                </div>
+                <div>
+                  <TodoWidget
+                    todos={dashTodos}
+                    isLoading={isTasksLoading}
+                    isReady={areTasksReady}
+                    onCreateTodo={createTask}
+                    onToggleTodo={toggleTask}
+                    onDeleteTodo={deleteTask}
+                  />
+                </div>
+              </div>
+
+              {/* 하단: 메모 및 AI 도구 */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <MemoWidget
+                  memoText={memoText}
+                  setMemoText={setMemoText}
+                  onSaveMemo={createQuickMemo}
+                  isLoading={areMemosLoading || Boolean(memosError)}
+                />
+                <AiToolsWidget compact={true} />
+              </div>
             </div>
           )}
 
@@ -357,15 +377,14 @@ export default function App() {
           )}
 
           {activeMenu === 'schedule' && (
-            <div className="grid flex-1 grid-cols-1 gap-6 md:min-h-0 md:grid-cols-[minmax(280px,360px)_minmax(0,1fr)]">
-              <div className="md:self-start">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-[minmax(280px,360px)_minmax(0,1fr)]">
+              <div>
                 <CalendarWidget
                   selectedDate={selectedDate}
                   onSelectDate={setSelectedDate}
                 />
               </div>
               <ScheduleWidget
-                className="h-[65vh] md:h-full"
                 schedules={filteredSchedules}
                 selectedDate={selectedDate}
                 isLoading={isSchedulesLoading}
@@ -377,16 +396,14 @@ export default function App() {
           )}
 
           {activeMenu === 'tasks' && (
-            <div className="max-w-3xl">
-              <TodoWidget
-                todos={filteredTodos}
-                isLoading={isTasksLoading}
-                isReady={areTasksReady}
-                onCreateTodo={createTask}
-                onToggleTodo={toggleTask}
-                onDeleteTodo={deleteTask}
-              />
-            </div>
+            <TodoWidget
+              todos={filteredTodos}
+              isLoading={isTasksLoading}
+              isReady={areTasksReady}
+              onCreateTodo={createTask}
+              onToggleTodo={toggleTask}
+              onDeleteTodo={deleteTask}
+            />
           )}
 
           {activeMenu === 'bookmarks' && (
@@ -415,11 +432,7 @@ export default function App() {
             />
           )}
 
-          {activeMenu === 'ai_tools' && (
-            <div className="max-w-3xl">
-              <AiToolsWidget />
-            </div>
-          )}
+          {activeMenu === 'ai_tools' && <AiToolsWidget compact={false} />}
 
           {activeMenu === 'trash' && (
             <TrashPage
