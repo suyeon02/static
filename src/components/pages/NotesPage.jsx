@@ -9,6 +9,7 @@ import {
   Highlighter,
   List,
   ListOrdered,
+  Pencil,
   Plus,
   Star,
   Tag,
@@ -23,10 +24,7 @@ import Highlight from '@tiptap/extension-highlight';
 import ErrorAlert from '../common/ErrorAlert';
 import normalizeTags from '../../lib/normalizeTags';
 
-
 const UNFILED = 'unfiled';
-
-
 
 const TEXT_COLORS = [
   { label: 'Default', value: '#191919' },
@@ -54,6 +52,7 @@ function escapeHTML(text) {
 
 function toEditorHTML(content) {
   const value = String(content || '');
+
   if (!value) return '';
   if (HTML_TAG_RE.test(value)) return value;
 
@@ -107,64 +106,72 @@ function RichNoteEditor({ note, onChange }) {
         >
           <Bold size={13} />
         </button>
-{/* 글머리 목록 */}
-<button
-  type="button"
-  onClick={() => editor.chain().focus().toggleBulletList().run()}
-  aria-label="글머리 목록"
-  aria-pressed={editor.isActive('bulletList')}
-  title="글머리 목록"
-  className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded border text-xs transition-colors ${
-    editor.isActive('bulletList')
-      ? 'border-ink bg-ink text-white'
-      : 'border-line-soft bg-canvas text-ink hover:bg-hover'
-  }`}
->
-  <List size={15} />
-</button>
 
-{/* 숫자 목록 */}
-<button
-  type="button"
-  onClick={() => editor.chain().focus().toggleOrderedList().run()}
-  aria-label="숫자 목록"
-  aria-pressed={editor.isActive('orderedList')}
-  title="숫자 목록"
-  className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded border text-xs transition-colors ${
-    editor.isActive('orderedList')
-      ? 'border-ink bg-ink text-white'
-      : 'border-line-soft bg-canvas text-ink hover:bg-hover'
-  }`}
->
-  <ListOrdered size={15} />
-</button>
+        <button
+          type="button"
+          onClick={() =>
+            editor.chain().focus().toggleBulletList().run()
+          }
+          aria-label="글머리 목록"
+          aria-pressed={editor.isActive('bulletList')}
+          title="글머리 목록"
+          className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded border text-xs transition-colors ${
+            editor.isActive('bulletList')
+              ? 'border-ink bg-ink text-white'
+              : 'border-line-soft bg-canvas text-ink hover:bg-hover'
+          }`}
+        >
+          <List size={15} />
+        </button>
+
+        <button
+          type="button"
+          onClick={() =>
+            editor.chain().focus().toggleOrderedList().run()
+          }
+          aria-label="숫자 목록"
+          aria-pressed={editor.isActive('orderedList')}
+          title="숫자 목록"
+          className={`flex h-7 w-7 cursor-pointer items-center justify-center rounded border text-xs transition-colors ${
+            editor.isActive('orderedList')
+              ? 'border-ink bg-ink text-white'
+              : 'border-line-soft bg-canvas text-ink hover:bg-hover'
+          }`}
+        >
+          <ListOrdered size={15} />
+        </button>
+
         <div className="mx-0.5 h-4 w-px bg-line-soft" />
 
         <div className="flex items-center gap-1" title="글자 색상">
-          <span className="px-1 text-[11px] font-bold text-muted">A</span>
+          <span className="px-1 text-[11px] font-bold text-muted">
+            A
+          </span>
 
-          {TEXT_COLORS.map((c) => {
-            const isActive = editor.isActive('textStyle', { color: c.value });
+          {TEXT_COLORS.map((color) => {
+            const isActive = editor.isActive('textStyle', {
+              color: color.value,
+            });
 
             return (
               <button
-                key={c.value}
+                key={color.value}
                 type="button"
                 onClick={() => {
-                  if (c.value === '#191919') {
+                  if (color.value === '#191919') {
                     editor.chain().focus().unsetColor().run();
                   } else {
-                    editor.chain().focus().setColor(c.value).run();
+                    editor.chain().focus().setColor(color.value).run();
                   }
                 }}
-                title={`글자색: ${c.label}`}
-                aria-label={`Text color ${c.label}`}
+                title={`글자색: ${color.label}`}
+                aria-label={`글자색 ${color.label}`}
                 className={`h-5 w-5 rounded-full border transition-transform cursor-pointer ${
                   isActive
                     ? 'scale-110 ring-2 ring-ink ring-offset-1'
                     : 'border-black/15 hover:scale-105'
                 }`}
-                style={{ backgroundColor: c.value }}
+                style={{ backgroundColor: color.value }}
               />
             );
           })}
@@ -173,33 +180,45 @@ function RichNoteEditor({ note, onChange }) {
         <div className="mx-0.5 h-4 w-px bg-line-soft" />
 
         <div className="flex items-center gap-1" title="형광펜">
-          <Highlighter size={13} className="mx-1 text-muted" />
+          <Highlighter
+            size={13}
+            className="mx-1 text-muted"
+            aria-hidden="true"
+          />
 
-          {HIGHLIGHT_COLORS.map((h) => {
-            const isActive = editor.isActive('highlight', { color: h.value });
+          {HIGHLIGHT_COLORS.map((highlight) => {
+            const isActive = editor.isActive('highlight', {
+              color: highlight.value,
+            });
 
             return (
               <button
-                key={h.value}
+                key={highlight.value}
                 type="button"
                 onClick={() =>
-                  editor.chain().focus().toggleHighlight({ color: h.value }).run()
+                  editor
+                    .chain()
+                    .focus()
+                    .toggleHighlight({ color: highlight.value })
+                    .run()
                 }
-                title={`형광펜: ${h.label}`}
-                aria-label={`Highlight ${h.label}`}
+                title={`형광펜: ${highlight.label}`}
+                aria-label={`형광펜 ${highlight.label}`}
                 className={`h-5 w-5 rounded border transition-transform cursor-pointer ${
                   isActive
                     ? 'scale-110 ring-2 ring-ink ring-offset-1'
                     : 'border-black/15 hover:scale-105'
                 }`}
-                style={{ backgroundColor: h.value }}
+                style={{ backgroundColor: highlight.value }}
               />
             );
           })}
 
           <button
             type="button"
-            onClick={() => editor.chain().focus().unsetHighlight().run()}
+            onClick={() =>
+              editor.chain().focus().unsetHighlight().run()
+            }
             title="형광펜 지우기"
             className="ml-0.5 rounded px-1.5 py-0.5 text-[11px] text-muted hover:bg-hover hover:text-ink cursor-pointer"
           >
@@ -238,6 +257,9 @@ export default function NotesPage({
   const [newFolderName, setNewFolderName] = useState('');
   const [showFolderForm, setShowFolderForm] = useState(false);
   const [isDeletingFolder, setIsDeletingFolder] = useState(false);
+  const [renamingFolderId, setRenamingFolderId] = useState(null);
+  const [renamingFolderName, setRenamingFolderName] = useState('');
+  const [isRenamingFolder, setIsRenamingFolder] = useState(false);
 
   const folderNotes =
     selectedFolder === UNFILED
@@ -254,7 +276,9 @@ export default function NotesPage({
   ].sort((a, b) => a.localeCompare(b));
 
   const visibleNotes = selectedTag
-    ? folderNotes.filter((note) => (note.tags || []).includes(selectedTag))
+    ? folderNotes.filter((note) =>
+        (note.tags || []).includes(selectedTag),
+      )
     : folderNotes;
 
   const activeNote = selectedId
@@ -262,7 +286,9 @@ export default function NotesPage({
     : null;
 
   const activeFolderId =
-    selectedFolder && selectedFolder !== UNFILED ? selectedFolder : null;
+    selectedFolder && selectedFolder !== UNFILED
+      ? selectedFolder
+      : null;
 
   const handleCreateNote = async () => {
     try {
@@ -297,10 +323,34 @@ export default function NotesPage({
     }
   };
 
+  const handleRenameFolder = async (event) => {
+    event.preventDefault();
+
+    const name = renamingFolderName.trim();
+
+    if (!name || !renamingFolderId) return;
+
+    setIsRenamingFolder(true);
+
+    try {
+      await onRenameFolder(renamingFolderId, name);
+
+      setRenamingFolderId(null);
+      setRenamingFolderName('');
+    } catch (error) {
+      console.error('폴더 이름 변경 실패:', error);
+    } finally {
+      setIsRenamingFolder(false);
+    }
+  };
+
   const handleDeleteFolder = async () => {
     if (isDeletingFolder) return;
 
-    const folder = folders.find((item) => item.id === selectedFolder);
+    const folder = folders.find(
+      (item) => item.id === selectedFolder,
+    );
+
     if (!folder) return;
 
     if (!window.confirm(`"${folder.name}" 폴더를 삭제할까요?`)) {
@@ -316,7 +366,6 @@ export default function NotesPage({
       setSelectedTag(null);
     } catch (error) {
       console.error('폴더 삭제 실패:', error);
-      // useNotes의 foldersError가 아래 ErrorAlert에 표시됩니다.
     } finally {
       setIsDeletingFolder(false);
     }
@@ -324,6 +373,7 @@ export default function NotesPage({
 
   const handleUpdate = (field, value) => {
     if (!activeNote) return;
+
     onUpdateNote(activeNote.id, { [field]: value });
   };
 
@@ -337,12 +387,18 @@ export default function NotesPage({
 
   const handleAddTag = (event) => {
     event.preventDefault();
+
     if (!activeNote) return;
 
     const tag = normalizeTags([newTag])[0];
+
     if (!tag) return;
 
-    handleUpdate('tags', normalizeTags([...(activeNote.tags || []), tag]));
+    handleUpdate(
+      'tags',
+      normalizeTags([...(activeNote.tags || []), tag]),
+    );
+
     setNewTag('');
   };
 
@@ -372,16 +428,27 @@ export default function NotesPage({
 
   return (
     <div className="relative flex h-[calc(100dvh-210px)] min-h-[460px] flex-col md:h-full md:min-h-[540px]">
-      {/* ── Top bar: Folder filter + Actions ── */}
-      <div className="mb-4 flex flex-wrap items-center gap-3">
+      {/* ── Mobile top bar ── */}
+      <div className="mb-4 flex flex-wrap items-center gap-3 md:hidden">
         <div className="flex items-center gap-2">
-          <Folder size={16} className="text-muted" />
+          <Folder
+            size={16}
+            className="text-muted"
+            aria-hidden="true"
+          />
 
           <select
             value={selectedFolder ?? ''}
-            onChange={(e) => {
-              const val = e.target.value;
-              setSelectedFolder(val === '' ? null : val === UNFILED ? UNFILED : val);
+            onChange={(event) => {
+              const value = event.target.value;
+
+              setSelectedFolder(
+                value === ''
+                  ? null
+                  : value === UNFILED
+                    ? UNFILED
+                    : value,
+              );
               setSelectedTag(null);
             }}
             className="ui-input h-9 min-w-[140px] bg-surface px-2.5 text-small"
@@ -399,10 +466,10 @@ export default function NotesPage({
 
         <button
           type="button"
-          onClick={() => setShowFolderForm((v) => !v)}
+          onClick={() => setShowFolderForm((value) => !value)}
           className="ui-btn h-9 px-3 text-small"
         >
-          <Plus size={13} />
+          <Plus size={13} aria-hidden="true" />
           Folder
         </button>
 
@@ -415,18 +482,19 @@ export default function NotesPage({
             title="선택한 폴더 삭제"
             aria-label="선택한 폴더 삭제"
           >
-            <Trash2 size={14} />
+            <Trash2 size={14} aria-hidden="true" />
             {isDeletingFolder ? '삭제 중...' : '폴더 삭제'}
           </button>
         )}
 
         <div className="ml-auto">
           <button
+            type="button"
             onClick={handleCreateNote}
             disabled={isLoading || isFoldersLoading}
             className="ui-btn ui-btn-primary h-9 px-3"
           >
-            <Plus size={14} />
+            <Plus size={14} aria-hidden="true" />
             New note
           </button>
         </div>
@@ -441,7 +509,9 @@ export default function NotesPage({
           <input
             autoFocus
             value={newFolderName}
-            onChange={(e) => setNewFolderName(e.target.value)}
+            onChange={(event) =>
+              setNewFolderName(event.target.value)
+            }
             placeholder="Folder name"
             className="ui-input h-9 flex-1 text-small"
           />
@@ -461,136 +531,355 @@ export default function NotesPage({
               setNewFolderName('');
             }}
             className="ui-icon-btn"
+            aria-label="폴더 생성 취소"
           >
-            <X size={16} />
+            <X size={16} aria-hidden="true" />
           </button>
         </form>
       )}
 
-      <ErrorAlert message={foldersError} onRetry={onRetryFolders} className="mb-3" />
+      <ErrorAlert
+        message={foldersError}
+        onRetry={onRetryFolders}
+        className="mb-3"
+      />
 
-      {/* Tags filter */}
-      {availableTags.length > 0 && (
-        <div className="mb-4 flex flex-wrap items-center gap-1.5">
-          <span className="mr-1 text-meta text-muted">Tags:</span>
+      {/* ── PC folder sidebar + notes list ── */}
+      <div className="flex min-h-0 flex-1 flex-col md:flex-row md:items-start md:gap-5">
+        {/* PC-only folder sidebar */}
+        <aside className="hidden w-56 shrink-0 flex-col md:flex md:h-[calc(100dvh-260px)] md:min-h-[420px]">
+          <div className="mb-3 flex items-center justify-between">
+            <span className="text-meta font-bold text-muted">
+              FOLDERS
+            </span>
 
-          {availableTags.map((tag) => {
-            const isActive = selectedTag === tag;
-
-            return (
+            <div className="flex items-center gap-1">
               <button
-                key={tag}
                 type="button"
-                onClick={() => setSelectedTag(isActive ? null : tag)}
-                className={`rounded-full px-2.5 py-1 text-meta transition-colors ${
-                  isActive
-                    ? 'bg-ink text-white'
-                    : 'bg-subtle text-muted hover:bg-hover hover:text-ink'
-                }`}
+                onClick={() => setShowFolderForm(true)}
+                className="ui-icon-btn"
+                aria-label="폴더 추가"
+                title="폴더 추가"
               >
-                {tag}
+                <Plus size={14} aria-hidden="true" />
               </button>
-            );
-          })}
-        </div>
-      )}
 
-      {/* ── Notes list (main content) ── */}
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        {isLoading ? (
-          <div className="ui-empty py-16">노트를 불러오는 중...</div>
-        ) : visibleNotes.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
-            <FileText size={32} className="text-muted opacity-40" />
-            <p className="text-body text-muted">No notes found.</p>
+              {selectedFolder && selectedFolder !== UNFILED && (
+                <button
+                  type="button"
+                  onClick={handleDeleteFolder}
+                  disabled={isDeletingFolder || isFoldersLoading}
+                  className="ui-icon-btn hover:text-red-700"
+                  aria-label="선택한 폴더 삭제"
+                  title="선택한 폴더 삭제"
+                >
+                  <Trash2 size={14} aria-hidden="true" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="min-h-0 flex-1 space-y-1 overflow-y-auto rounded-lg border border-line-soft bg-surface p-2">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedFolder(null);
+                setSelectedTag(null);
+              }}
+              aria-pressed={selectedFolder === null}
+              className={`flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-small transition-colors ${
+                selectedFolder === null
+                  ? 'bg-ink text-white'
+                  : 'text-ink hover:bg-hover'
+              }`}
+            >
+              <FileText size={14} aria-hidden="true" />
+              All notes
+            </button>
 
             <button
-              onClick={handleCreateNote}
-              className="ui-btn ui-btn-primary mt-2"
+              type="button"
+              onClick={() => {
+                setSelectedFolder(UNFILED);
+                setSelectedTag(null);
+              }}
+              aria-pressed={selectedFolder === UNFILED}
+              className={`flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-small transition-colors ${
+                selectedFolder === UNFILED
+                  ? 'bg-ink text-white'
+                  : 'text-ink hover:bg-hover'
+              }`}
             >
-              <Plus size={14} /> Create first note
+              <Folder size={14} aria-hidden="true" />
+              Unfiled
             </button>
-          </div>
-        ) : (
-          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {visibleNotes.map((note) => {
-              const isActive = selectedId === note.id;
+
+            {folders.map((folder) => {
+              const isActive = selectedFolder === folder.id;
+              const isRenaming = renamingFolderId === folder.id;
+
+              if (isRenaming) {
+                return (
+                  <form
+                    key={folder.id}
+                    onSubmit={handleRenameFolder}
+                    className="flex items-center gap-1 rounded-md bg-subtle px-2 py-1.5"
+                  >
+                    <input
+                      autoFocus
+                      value={renamingFolderName}
+                      onChange={(event) =>
+                        setRenamingFolderName(event.target.value)
+                      }
+                      disabled={isRenamingFolder}
+                      className="ui-input h-8 min-w-0 flex-1 px-2 text-small"
+                      aria-label="폴더 이름 변경"
+                    />
+
+                    <button
+                      type="submit"
+                      disabled={
+                        isRenamingFolder ||
+                        !renamingFolderName.trim()
+                      }
+                      className="ui-icon-btn"
+                      aria-label="폴더 이름 저장"
+                      title="폴더 이름 저장"
+                    >
+                      <Check size={14} aria-hidden="true" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRenamingFolderId(null);
+                        setRenamingFolderName('');
+                      }}
+                      disabled={isRenamingFolder}
+                      className="ui-icon-btn"
+                      aria-label="폴더 이름 변경 취소"
+                      title="취소"
+                    >
+                      <X size={14} aria-hidden="true" />
+                    </button>
+                  </form>
+                );
+              }
 
               return (
-                <li key={note.id}>
+                <div
+                  key={folder.id}
+                  className={`group flex items-center gap-1 rounded-md transition-colors ${
+                    isActive
+                      ? 'bg-ink text-white'
+                      : 'hover:bg-hover'
+                  }`}
+                >
                   <button
                     type="button"
                     onClick={() => {
-                      setSelectedId(note.id);
-                      setIsPreview(false);
+                      setSelectedFolder(folder.id);
+                      setSelectedTag(null);
                     }}
-                    className={`group flex w-full flex-col rounded-lg border p-4 text-left transition-all ${
-                      isActive
-                        ? 'border-ink bg-subtle shadow-sm'
-                        : 'border-line-soft bg-surface hover:border-line hover:shadow-sm'
-                    }`}
+                    aria-pressed={isActive}
+                    className="flex min-w-0 flex-1 items-center gap-2 px-2.5 py-2 text-left text-small"
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="truncate text-[15px] font-semibold leading-snug text-foreground">
-                        {note.title}
-                      </h3>
-
-                      <span
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          void handleToggleFavorite(note);
-                        }}
-                        className={`shrink-0 ${
-                          note.isFavorite
-                            ? 'text-amber-500'
-                            : 'text-muted opacity-0 group-hover:opacity-100'
-                        }`}
-                      >
-                        <Star
-                          size={14}
-                          fill={note.isFavorite ? 'currentColor' : 'none'}
-                        />
-                      </span>
-                    </div>
-
-                    {(note.tags || []).length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {(note.tags || []).slice(0, 3).map((tag) => (
-                          <span key={tag} className="ui-tag text-[11px]">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    <p className="mt-2 line-clamp-2 text-meta text-muted">
-                      {note.content
-                        ? note.content.replace(/<[^>]+>/g, ' ').slice(0, 80)
-                        : 'Empty note'}
-                    </p>
+                    <Folder
+                      size={14}
+                      className="shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span className="truncate">
+                      {folder.name}
+                    </span>
                   </button>
-                </li>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRenamingFolderId(folder.id);
+                      setRenamingFolderName(folder.name);
+                    }}
+                    disabled={isRenamingFolder}
+                    className={`ui-icon-btn shrink-0 ${
+                      isActive ? 'text-white' : 'text-muted'
+                    }`}
+                    aria-label={`${folder.name} 이름 변경`}
+                    title="폴더 이름 변경"
+                  >
+                    <Pencil size={13} aria-hidden="true" />
+                  </button>
+                </div>
               );
             })}
-          </ul>
-        )}
+          </div>
+
+          <div className="mt-3">
+            <button
+              type="button"
+              onClick={handleCreateNote}
+              disabled={isLoading || isFoldersLoading}
+              className="ui-btn ui-btn-primary w-full"
+            >
+              <Plus size={14} aria-hidden="true" />
+              New note
+            </button>
+          </div>
+        </aside>
+
+        {/* Notes list */}
+        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
+          {/* Tags filter */}
+          {availableTags.length > 0 && (
+            <div className="mb-4 flex flex-wrap items-center gap-1.5">
+              <span className="mr-1 text-meta text-muted">
+                Tags:
+              </span>
+
+              {availableTags.map((tag) => {
+                const isActive = selectedTag === tag;
+
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() =>
+                      setSelectedTag(isActive ? null : tag)
+                    }
+                    className={`rounded-full px-2.5 py-1 text-meta transition-colors ${
+                      isActive
+                        ? 'bg-ink text-white'
+                        : 'bg-subtle text-muted hover:bg-hover hover:text-ink'
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {isLoading ? (
+            <div className="ui-empty py-16">
+              노트를 불러오는 중...
+            </div>
+          ) : visibleNotes.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
+              <FileText
+                size={32}
+                className="text-muted opacity-40"
+                aria-hidden="true"
+              />
+              <p className="text-body text-muted">
+                No notes found.
+              </p>
+
+              <button
+                type="button"
+                onClick={handleCreateNote}
+                className="ui-btn ui-btn-primary mt-2"
+              >
+                <Plus size={14} aria-hidden="true" />
+                Create first note
+              </button>
+            </div>
+          ) : (
+            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {visibleNotes.map((note) => {
+                const isActive = selectedId === note.id;
+
+                return (
+                  <li key={note.id}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedId(note.id);
+                        setIsPreview(false);
+                      }}
+                      className={`group flex w-full flex-col rounded-lg border p-4 text-left transition-all ${
+                        isActive
+                          ? 'border-ink bg-subtle shadow-sm'
+                          : 'border-line-soft bg-surface hover:border-line hover:shadow-sm'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="truncate text-[15px] font-semibold leading-snug text-foreground">
+                          {note.title}
+                        </h3>
+
+                        <span
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            void handleToggleFavorite(note);
+                          }}
+                          className={`shrink-0 ${
+                            note.isFavorite
+                              ? 'text-amber-500'
+                              : 'text-muted opacity-0 group-hover:opacity-100'
+                          }`}
+                        >
+                          <Star
+                            size={14}
+                            fill={
+                              note.isFavorite
+                                ? 'currentColor'
+                                : 'none'
+                            }
+                            aria-hidden="true"
+                          />
+                        </span>
+                      </div>
+
+                      {(note.tags || []).length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {(note.tags || [])
+                            .slice(0, 3)
+                            .map((tag) => (
+                              <span
+                                key={tag}
+                                className="ui-tag text-[11px]"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                        </div>
+                      )}
+
+                      <p className="mt-2 line-clamp-2 text-meta text-muted">
+                        {note.content
+                          ? note.content
+                              .replace(/<[^>]+>/g, ' ')
+                              .slice(0, 80)
+                          : 'Empty note'}
+                      </p>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
       </div>
 
-      {/* ── Editor overlay (slides in from right) ── */}
+      {/* ── Editor overlay ── */}
       {activeNote && (
         <>
-          {/* Backdrop */}
           <div
             className="fixed inset-0 z-40 bg-black/20 md:bg-black/10"
             onClick={closeEditor}
           />
 
           <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-full flex-col border-l border-line bg-surface shadow-xl md:max-w-[640px]">
-            {/* Header */}
             <div className="flex items-center justify-between gap-3 border-b border-line-soft px-4 py-3">
               <div className="flex min-w-0 items-center gap-2">
-                <Edit3 size={16} className="shrink-0 text-muted" />
-                <span className="truncate text-small font-bold">EDITOR</span>
+                <Edit3
+                  size={16}
+                  className="shrink-0 text-muted"
+                  aria-hidden="true"
+                />
+                <span className="truncate text-small font-bold">
+                  EDITOR
+                </span>
               </div>
 
               <div className="flex items-center gap-0.5">
@@ -600,19 +889,32 @@ export default function NotesPage({
                   className="ui-icon-btn"
                   title={isPreview ? 'Edit' : 'Preview'}
                 >
-                  {isPreview ? <Edit3 size={15} /> : <Eye size={15} />}
+                  {isPreview ? (
+                    <Edit3 size={15} aria-hidden="true" />
+                  ) : (
+                    <Eye size={15} aria-hidden="true" />
+                  )}
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => void handleToggleFavorite(activeNote)}
+                  onClick={() =>
+                    void handleToggleFavorite(activeNote)
+                  }
                   className={`ui-icon-btn ${
-                    activeNote.isFavorite ? 'text-amber-500' : ''
+                    activeNote.isFavorite
+                      ? 'text-amber-500'
+                      : ''
                   }`}
                 >
                   <Star
                     size={15}
-                    fill={activeNote.isFavorite ? 'currentColor' : 'none'}
+                    fill={
+                      activeNote.isFavorite
+                        ? 'currentColor'
+                        : 'none'
+                    }
+                    aria-hidden="true"
                   />
                 </button>
 
@@ -621,35 +923,39 @@ export default function NotesPage({
                   onClick={() => void handleDelete(activeNote)}
                   className="ui-icon-btn hover:text-red-700"
                 >
-                  <Trash2 size={15} />
+                  <Trash2 size={15} aria-hidden="true" />
                 </button>
 
                 <button
                   type="button"
                   onClick={closeEditor}
                   className="ui-icon-btn ml-1"
-                  aria-label="Close editor"
+                  aria-label="에디터 닫기"
                 >
-                  <X size={18} />
+                  <X size={18} aria-hidden="true" />
                 </button>
               </div>
             </div>
 
-            {/* Body */}
             <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4">
               <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center">
                 <input
                   type="text"
                   value={activeNote.title}
-                  onChange={(e) => handleUpdate('title', e.target.value)}
+                  onChange={(event) =>
+                    handleUpdate('title', event.target.value)
+                  }
                   className="ui-input flex-1 text-[15px] font-semibold"
                   placeholder="Note title"
                 />
 
                 <select
                   value={activeNote.folderId || ''}
-                  onChange={(e) =>
-                    handleUpdate('folderId', e.target.value || null)
+                  onChange={(event) =>
+                    handleUpdate(
+                      'folderId',
+                      event.target.value || null,
+                    )
                   }
                   disabled={isFoldersLoading}
                   className="ui-input h-9 bg-surface px-2.5 text-small sm:w-36"
@@ -666,7 +972,10 @@ export default function NotesPage({
 
               <div className="mb-4 flex flex-wrap items-center gap-1.5">
                 {(activeNote.tags || []).map((tag) => (
-                  <span key={tag} className="ui-tag py-1 text-ink">
+                  <span
+                    key={tag}
+                    className="ui-tag py-1 text-ink"
+                  >
                     {tag}
 
                     <button
@@ -674,15 +983,20 @@ export default function NotesPage({
                       onClick={() => handleRemoveTag(tag)}
                       className="ml-0.5 text-muted hover:text-ink"
                     >
-                      <X size={12} />
+                      <X size={12} aria-hidden="true" />
                     </button>
                   </span>
                 ))}
 
-                <form onSubmit={handleAddTag} className="flex items-center gap-1">
+                <form
+                  onSubmit={handleAddTag}
+                  className="flex items-center gap-1"
+                >
                   <input
                     value={newTag}
-                    onChange={(e) => setNewTag(e.target.value)}
+                    onChange={(event) =>
+                      setNewTag(event.target.value)
+                    }
                     placeholder="Add tag"
                     className="ui-input h-8 w-28 px-2 text-meta"
                   />
@@ -692,7 +1006,7 @@ export default function NotesPage({
                     disabled={!newTag.trim()}
                     className="ui-icon-btn"
                   >
-                    <Plus size={14} />
+                    <Plus size={14} aria-hidden="true" />
                   </button>
                 </form>
               </div>
@@ -707,7 +1021,9 @@ export default function NotesPage({
               ) : (
                 <RichNoteEditor
                   note={activeNote}
-                  onChange={(html) => handleUpdate('content', html)}
+                  onChange={(html) =>
+                    handleUpdate('content', html)
+                  }
                 />
               )}
             </div>

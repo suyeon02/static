@@ -378,14 +378,14 @@ export default function ProjectsPage({
         />
 
         <input
-          type="text"
-          value={title}
-          onChange={(event) => setTitle(event.target.value)}
-          placeholder="New project name..."
-          aria-label="프로젝트 이름"
-          className="ui-input h-10 min-w-0 flex-1 text-body"
-          disabled={!isReady || isCreating}
-        />
+  type="text"
+  value={title}
+  onChange={(event) => setTitle(event.target.value)}
+  placeholder="New project name..."
+  aria-label="프로젝트 이름"
+  className="ui-input h-10 min-h-[40px] w-full min-w-0 flex-none text-body sm:flex-1"
+  disabled={!isReady || isCreating}
+/>
 
         <button
           type="submit"
